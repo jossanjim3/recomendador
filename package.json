@@ -1,0 +1,23 @@
+{
+  "name": "recomendador",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jossanjim3/recomendador.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jossanjim3/recomendador/issues"
+  },
+  "homepage": "https://github.com/jossanjim3/recomendador#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
