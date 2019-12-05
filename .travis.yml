@@ -1,10 +1,7 @@
 language: node_js
-node_js:
-  - "stable"
-cache:
-  directories:
-  - node_modules
-script:
-  - npm install
-  - npm test
-  - npm run build
+deploy:
+  skip_cleanup: true
+  provider: heroku
+  api_key:
+    secure: b63c8c8f-6e62-4e93-81af-4143b2784cb5
+  app: recomendador-fis1920
