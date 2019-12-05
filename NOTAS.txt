@@ -1,0 +1,3 @@
+añadir caso de uso para evitar que me recomienden una pelicula. Si el usuario hace click en 
+no recomendar una pelicula ésta no debe aparecer nunca mas en la lista de recomendaciones.
+
