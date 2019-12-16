@@ -38,7 +38,7 @@ router.get("/aleatorio/peliculas/:number?",(req, res) => {
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
 // (las que tienes buena puntuacion)
 router.get("/aleatorio/series/:number?",(req, res) => {
-    res.send("<html><body><h1>Aleatorio with film Id hasta " + (req.params.number || 5) + " films...</h1></body></html>");
+    res.send("<html><body><h1>Aleatorio with serie Id hasta " + (req.params.number || 5) + " series...</h1></body></html>");
 });
 
 // --------------------------
