@@ -1,5 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+const path = require('path');
 
 var port = (process.env.PORT || 3000);
 
@@ -11,11 +12,16 @@ app.use(bodyParser.json());
 
 // metodo root
 router.get("/",(req, res) => {
-    console.log(" - ROOT");
+    console.log(" - ROOT - API rutas recomendador");
     
-    res.send("<html><body><h1>My server is running... JD</h1></body></html>");
-    //var rutas = require('../views/api_rutas.html')
-    //res.sendFile(rutas, {root: __dirname });
+    //res.send("<html><body><h1>My server is running... JD</h1></body></html>");
+    //console.log(__dirname); //C:\Users\jdsj6\Documents\Master\FIS\Proyecto FIS\BakcEnd\Recomendador\src
+
+    //var ruta = require('../views/api_rutas.html');
+    var ruta = path.join(__dirname, '../views/apiRutas.html');
+    //console.log(ruta);
+    
+    res.sendFile(ruta);
 
 });
 
