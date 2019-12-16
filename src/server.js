@@ -29,9 +29,15 @@ router.get("/",(req, res) => {
 // ALEATORIOS
 // --------------------------
 
-// Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) peliculas y series
+// Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) peliculas
 // (las que tienes buena puntuacion)
-router.get("/aleatorio/:number?",(req, res) => {
+router.get("/aleatorio/peliculas/:number?",(req, res) => {
+    res.send("<html><body><h1>Aleatorio with film Id hasta " + (req.params.number || 5) + " films...</h1></body></html>");
+});
+
+// Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
+// (las que tienes buena puntuacion)
+router.get("/aleatorio/series/:number?",(req, res) => {
     res.send("<html><body><h1>Aleatorio with film Id hasta " + (req.params.number || 5) + " films...</h1></body></html>");
 });
 
