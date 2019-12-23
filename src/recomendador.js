@@ -41,6 +41,10 @@ router.get("/aleatorio/peliculas/:number?", (req, res) => {
         number = 5;
     }
 
+    // otengo la lista negra
+    var listaNegra = getTodaListaNegra();
+    console.log("listaNegra: " + listaNegra);
+
     // array de peliculas que sera devuelta al usuario
     peliculasRet = [];
 
@@ -53,10 +57,14 @@ router.get("/aleatorio/peliculas/:number?", (req, res) => {
             const peliculas = body.results;
             
             for (var pelicula of peliculas) {
-                console.log("Pelicula Id: " + pelicula.id);
+                //console.log("Pelicula Id: " + pelicula.id);
+                
+                //var estaVetada = estaEnListaNegra(pelicula.id);
+                var estaVetada = listaNegra.includes(pelicula.id); 
+                console.log("estaVetada " + pelicula.id + " ? : result -> " + estaVetada);
 
-                // si no esta en lista negra añado a lista de peliculas a devolver con maximo number
-                if (!estaEnListaNegra(pelicula.id)){
+                /* // si no esta en lista negra añado a lista de peliculas a devolver con maximo number
+                if (!estaVetada){
                     peliculasRet.push(pelicula);
 
                     // hago el break cuando lleve number peliculas
@@ -67,7 +75,7 @@ router.get("/aleatorio/peliculas/:number?", (req, res) => {
                 } else {
                     // ignoro la pelicula y no lo añado
 
-                }
+                } */
             }
 
             res.send(peliculasRet);
@@ -118,7 +126,21 @@ router.get("/porSimilitudes/serie/:serieId/:number?",(req, res) => {
 
 //Devuelve la lista de peliculas que no se debe recomandar al usuario
 router.get("/listaNegra/peliculas", (req, res) => {
-    res.send("<html><body><h1>Lista negra</h1></body></html>")
+    console.log(Date() + " - GET /listaNegra");
+
+    // como el filtro el vacio {} devuelve todos los elementos
+    ListaNegra.find({}, (err, elementos) => {
+        if (err) {
+            console.log(Date() + " - " + err);
+            res.sendStatus(500);
+        } else {
+
+            // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
+            res.send(elementos.map((elemento) => {
+                return elemento.cleanup();
+            }));
+        }
+    });
 });
 
 //Devuelve la lista de series que no se debe recomandar al usuario
@@ -135,7 +157,7 @@ router.post("/listaNegra/pelicula/:peliculaId", (req, res) => {
 
     const pelicula = { "idTmdb" : peliculaId }
 
-    if (!estaEnListaNegra()) {
+    if (!estaEnListaNegra(peliculaId)) {
         ListaNegra.create(pelicula, function(err, record) {
             if (err) {
                 console.log(Date() + " - " + err);
@@ -172,8 +194,45 @@ router.delete("/listaNegra/serie/:serieId", (req, res) => {
 // --------------------------
 // FUNCIONES AUXILIARES
 // --------------------------
-function estaEnListaNegra(id){
+function estaEnListaNegra(idTmdb){
+    console.log("¿esta en lista negra el idTmdb? : " + idTmdb);
+
+    ListaNegra.find({ "idTmdb": idTmdb}, (err, idVetado) => {
+        console.log("idVetado: " + idVetado);
+
+        if (err) {
+            console.log(Date() + " - " + err);
+            return false;
+
+        } else if (idVetado != null && idVetado != "") {
+            console.log("idTmdb encontrado en lista negra: " + idTmdb);
+            return true;
+
+        } else {
+            return false;
+        }
+    });
+
     return false;
+}
+
+function getTodaListaNegra(){
+    ListaNegra.find({}, (err, listaVetada) => {
+        if (err) {
+            console.log(Date() + " - " + err);
+            return false;
+
+        } else {
+            // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
+            listaVetada.map((elemento) => {                
+                elemento.cleanup();
+                console.log("elemento: " + elemento);
+            });
+
+            return listaVetada;
+        }
+        
+    });
 }
 
 module.exports = router;
