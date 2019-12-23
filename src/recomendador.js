@@ -151,23 +151,23 @@ router.get("/listaNegra/series", (req, res) => {
 //Añade la pelicula a la lista de peliculas que no se debe recomandar al usuario
 // ruta postman: http://localhost:3000/recomendador/listaNegra/pelicula/419704
 router.post("/listaNegra/pelicula/:peliculaId", (req, res) => {
-    console.log(Date() + " - POST /contacts");
+    console.log(Date() + " - POST /peliculaId");
     var peliculaId = req.params.peliculaId; //para que funcione esto tienes que añadir body-parser
     console.log(" - req.body => pelicula: " + peliculaId);
 
     const pelicula = { "idTmdb" : peliculaId }
 
-    if (!estaEnListaNegra(peliculaId)) {
+    //if (!estaEnListaNegra(peliculaId)) {
         ListaNegra.create(pelicula, function(err, record) {
             if (err) {
                 console.log(Date() + " - " + err);
                 res.sendStatus(500);
             } else {
-                console.log(record._id, pelicula.idTmdb);
+                console.log("pelicula añadida: ", record._id, pelicula.idTmdb);
                 res.sendStatus(201);
             }
         }); 
-    }
+    //}
      
     //res.send("<html><body><h1>Lista negra</h1></body></html>")
 });
@@ -179,7 +179,19 @@ router.post("/listaNegra/serie/:serieId", (req, res) => {
 
 //Retira la pelicula de la lista de peliculas que no se debe recomandar al usuario
 router.delete("/listaNegra/pelicula/:peliculaId", (req, res) => {
-    res.send("<html><body><h1>Lista negra</h1></body></html>")
+
+    console.log(Date() + " - DELETE /contacts");
+    var peliculaId = req.params.peliculaId; //para que funcione esto tienes que añadir body-parser
+    console.log(" - req.body => pelicula: " + peliculaId);
+
+    // es necesario el id de la pelicula creado por mongoose
+    ListaNegra.findByIdAndRemove(peliculaId, (err) => {
+        if (err){
+            console.log(Date() + " - " + err);
+            res.sendStatus(500);
+        } else
+            res.json({ message: 'Pelicula Deleted!', peliculaId});
+    });
 });
 
 //Retira la serie de la lista de series que no se debe recomandar al usuario
@@ -217,19 +229,21 @@ function estaEnListaNegra(idTmdb){
 }
 
 function getTodaListaNegra(){
-    ListaNegra.find({}, (err, listaVetada) => {
+
+    ListaNegra.find({}, (err, elementos) => {
         if (err) {
             console.log(Date() + " - " + err);
             return false;
 
         } else {
             // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
-            listaVetada.map((elemento) => {                
+            elementos.map((elemento) => {                
                 elemento.cleanup();
-                console.log("elemento: " + elemento);
+                //console.log("elemento: " + elemento);
             });
 
-            return listaVetada;
+            console.log("elementos: " + elementos);
+            return elementos;
         }
         
     });
