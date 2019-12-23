@@ -1,3 +1,17 @@
+/* db.js 
+* 
+* Recomendador API Microservice
+* Database config
+* 
+* Authors: 
+* José D. Sánchez
+* Piérre
+* 
+* Universidad de Sevilla 
+* 2019-20
+* 
+*/
+
 const mongoose = require('mongoose');
 
 /*

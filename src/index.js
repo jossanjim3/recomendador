@@ -1,3 +1,17 @@
+/* index.js 
+* 
+* Recomendador API Microservice
+* Index recomendador
+* 
+* Authors: 
+* José D. Sánchez
+* Piérre
+* 
+* Universidad de Sevilla 
+* 2019-20
+* 
+*/
+
 const app = require('./server.js');
 
 const dbConnect = require('./db');
