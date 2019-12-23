@@ -79,10 +79,6 @@ router.get("/aleatorio/peliculas/:number?", (req, res) => {
         })
 });
 
-function estaEnListaNegra(id){
-    return false;
-}
-
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
 // (las que tienes buena puntuacion)
 router.get("/aleatorio/series/:number?",(req, res) => {
@@ -131,9 +127,27 @@ router.get("/listaNegra/series", (req, res) => {
 });
 
 //Añade la pelicula a la lista de peliculas que no se debe recomandar al usuario
+// ruta postman: http://localhost:3000/recomendador/listaNegra/pelicula/419704
 router.post("/listaNegra/pelicula/:peliculaId", (req, res) => {
-    
-    res.send("<html><body><h1>Lista negra</h1></body></html>")
+    console.log(Date() + " - POST /contacts");
+    var peliculaId = req.params.peliculaId; //para que funcione esto tienes que añadir body-parser
+    console.log(" - req.body => pelicula: " + peliculaId);
+
+    const pelicula = { "idTmdb" : peliculaId }
+
+    if (!estaEnListaNegra()) {
+        ListaNegra.create(pelicula, function(err, record) {
+            if (err) {
+                console.log(Date() + " - " + err);
+                res.sendStatus(500);
+            } else {
+                console.log(record._id, pelicula.idTmdb);
+                res.sendStatus(201);
+            }
+        }); 
+    }
+     
+    //res.send("<html><body><h1>Lista negra</h1></body></html>")
 });
 
 //Añade la serie a la lista de series que no se debe recomandar al usuario
@@ -154,5 +168,12 @@ router.delete("/listaNegra/serie/:serieId", (req, res) => {
 // --------------------------
 // LISTA NEGRA
 // --------------------------
+
+// --------------------------
+// FUNCIONES AUXILIARES
+// --------------------------
+function estaEnListaNegra(id){
+    return false;
+}
 
 module.exports = router;
