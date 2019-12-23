@@ -33,10 +33,12 @@ router.get("/aleatorio/peliculas/:number?", (req, res) => {
     
     const urlAPI = "https://api.themoviedb.org/3/movie/popular";
     const apiKey = "?api_key=18268e82edbd92497a6d18853ddf8c57";
-    var url = urljoin(urlAPI, apiKey);
+    var url = urljoin(urlAPI, "");
 
     const options = {
-        
+        qs: {
+            api_key : "18268e82edbd92497a6d18853ddf8c57" // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+        },
     }
     const requestJD = request.get(url, options);
 
