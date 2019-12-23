@@ -11,10 +11,15 @@ class PeliculasTMDBResource {
     }
 
     static requestHeaders(){
+        
+    }
+
+    // parametros de la consulta a la api -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+    static requestParams(){
         const tmdbKey = (process.env.TMBD_KEY || '18268e82edbd92497a6d18853ddf8c57');
 
         return {
-            api_key : tmdbKey
+            api_key : tmdbKey // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
         }
     }
 
@@ -23,6 +28,7 @@ class PeliculasTMDBResource {
         //console.log(url);
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),
+            qs:      PeliculasTMDBResource.requestParams(), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
         }
         //console.log(options);
         return request.get(url, options);

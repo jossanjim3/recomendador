@@ -22,37 +22,14 @@ const peliculasTMDBResource = require('./peliculasTMDBResource');
 // --------------------------
 // ALEATORIOS
 // --------------------------
-const request = require('request-promise-native').defaults({json: true});
-const urljoin = require('url-join');
 
-// Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) peliculas
-// (las que tienes buena puntuacion)
+// Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) peliculas populares de TMDB
+// ruta postman: http://localhost:3000/recomendador/aleatorio/peliculas
 router.get("/aleatorio/peliculas/:number?", (req, res) => {
 
-    console.log(" - GET aleatorio peliculas tmdb")
-    
-    const urlAPI = "https://api.themoviedb.org/3/movie/popular";
-    const apiKey = "?api_key=18268e82edbd92497a6d18853ddf8c57";
-    var url = urljoin(urlAPI, "");
+    console.log(" - GET aleatorio peliculas TMDB")
 
-    const options = {
-        qs: {
-            api_key : "18268e82edbd92497a6d18853ddf8c57" // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
-        },
-    }
-    const requestJD = request.get(url, options);
-
-    requestJD
-    .then((body) => {
-        res.send(body);
-    })
-
-    .catch((error) => {
-        console.log("error: " + error);
-        res.sendStatus(500);
-    })
-
-    /* peliculasTMDBResource.getAllPeliculasAleatorias()
+    peliculasTMDBResource.getAllPeliculasAleatorias()
         .then((body) => {
             res.send(body);
         })
@@ -60,10 +37,7 @@ router.get("/aleatorio/peliculas/:number?", (req, res) => {
         .catch((error) => {
             console.log("error: " + error);
             res.sendStatus(500);
-        }) */
-
-    //res.send("<html><body><h1>Aleatorio with film Id hasta " + (req.params.number || 5) + " films...</h1></body></html>");
-
+        })
 });
 
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
