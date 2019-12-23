@@ -17,6 +17,7 @@ var router = express.Router();
 
 var db = require('./db.js');
 
+const ListaNegra = require('./listaNegra');
 const peliculasTMDBResource = require('./peliculasTMDBResource');
 
 // --------------------------
@@ -28,23 +29,59 @@ const peliculasTMDBResource = require('./peliculasTMDBResource');
 router.get("/aleatorio/peliculas/:number?", (req, res) => {
 
     console.log(" - GET aleatorio peliculas TMDB")
+    
+    // TODO recorrer el json devuelto por mdb, comprobar que la lista de peliculas no este incluida en la lista negra
+    // TODO limitar por parametro el numero de peliculas devueltas, 5 por defecto como minimo si no se indica, o con una paginacion...
+
+    // numero de peliculas a devolver pasado por parametro
+    var number = req.query.number;
+    console.log("number: " + number);
+
+    if (number <= 0 || number == undefined){
+        number = 5;
+    }
+
+    // array de peliculas que sera devuelta al usuario
+    peliculasRet = [];
 
     peliculasTMDBResource.getAllPopularPeliculasAleatorias()
     //peliculasTMDBResource.getAllTopRatedPeliculasAleatorias()
+
         .then((body) => {
-            res.send(body);
+            // recorro la lista de peliculas de Tmdb y .si el id esta añadido en la lista negra no lo añado en la
+            // lista de peliculas a devolver
+            const peliculas = body.results;
+            
+            for (var pelicula of peliculas) {
+                console.log("Pelicula Id: " + pelicula.id);
+
+                // si no esta en lista negra añado a lista de peliculas a devolver con maximo number
+                if (!estaEnListaNegra(pelicula.id)){
+                    peliculasRet.push(pelicula);
+
+                    // hago el break cuando lleve number peliculas
+                    if (peliculasRet.length == number){
+                        break;
+                    }
+
+                } else {
+                    // ignoro la pelicula y no lo añado
+
+                }
+            }
+
+            res.send(peliculasRet);
         })
 
         .catch((error) => {
             console.log("error: " + error);
             res.sendStatus(500);
         })
-
-    // TODO recorrer el json devuelto por mdb, comprobar que la lista de peliculas no este incluida en la lista negra
-    
-    // TODO limitar por parametro el numero de peliculas devueltas, 5 por defecto como minimo si no se indica, o con una paginacion...
-
 });
+
+function estaEnListaNegra(id){
+    return false;
+}
 
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
 // (las que tienes buena puntuacion)
@@ -95,6 +132,7 @@ router.get("/listaNegra/series", (req, res) => {
 
 //Añade la pelicula a la lista de peliculas que no se debe recomandar al usuario
 router.post("/listaNegra/pelicula/:peliculaId", (req, res) => {
+    
     res.send("<html><body><h1>Lista negra</h1></body></html>")
 });
 
