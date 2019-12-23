@@ -29,7 +29,8 @@ router.get("/aleatorio/peliculas/:number?", (req, res) => {
 
     console.log(" - GET aleatorio peliculas TMDB")
 
-    peliculasTMDBResource.getAllPeliculasAleatorias()
+    peliculasTMDBResource.getAllPopularPeliculasAleatorias()
+    //peliculasTMDBResource.getAllTopRatedPeliculasAleatorias()
         .then((body) => {
             res.send(body);
         })
@@ -38,6 +39,11 @@ router.get("/aleatorio/peliculas/:number?", (req, res) => {
             console.log("error: " + error);
             res.sendStatus(500);
         })
+
+    // TODO recorrer el json devuelto por mdb, comprobar que la lista de peliculas no este incluida en la lista negra
+    
+    // TODO limitar por parametro el numero de peliculas devueltas, 5 por defecto como minimo si no se indica, o con una paginacion...
+
 });
 
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
