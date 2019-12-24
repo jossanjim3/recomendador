@@ -20,6 +20,12 @@ var db = require('./db.js');
 const ListaNegra = require('./listaNegra');
 const peliculasTMDBResource = require('./peliculasTMDBResource');
 
+const POSITIVE_RATE_MIN = 6;
+
+function absQuadraticMean(sum, elementsNumber) {
+    return Math.abs(sum / Math.pow(elementsNumber, 2));
+}
+
 // --------------------------
 // ALEATORIOS
 // --------------------------
@@ -119,13 +125,52 @@ router.get("/aleatorio/series/:number?",(req, res) => {
 // de notacion del usuario con las notas de los otos usuarios.
 router.get("/porSimilitudes​/pelicula​/:filmId/:number?",(req, res) => {
 
+    const moviesFilteredSet = [];
+    const moviesGlobalSetIds = [];
+    var number = req.query.number || 5;
+    //const notas = await reviewsRessource.getAllRatingsByUser();
+    const ratings;
+    //Formatar Ratings
+    const mainMovieData = await peliculasTMDBResource.getTmdbRessource(req.query.filmId);
+    const mainUserRatings = ratings.find(user => user.id)
+    ratings = ratings.filter(user => user.reviews.find(review => req.query.filmId != review.imdbId) != null)
+    ratings.forEach(user =>  {
+        user.CommonRatingsNumber = 0;
+        user.CommonRatingsSum = 0;
+        user.reviews.forEach(userRating => {
+            var rating;
+            if((mainUserRating = mainUserRatings.find(review => userRating.imdbId == review.imdbId)) != null) {
+                userRating.rating -= mainUserRating.rating;
+                user.CommonRatingsSum += userRating.rating;
+                user.CommonRatingsNumber++;
+            }
+        })
+    });
+    sortedRatings = ratings.sort(
+        (user1, user2) => absQuadraticMean(user1.CommonRatingsSum, user1.CommonRatingsNumber) - absQuadraticMean(user2.CommonRatingsSum, user2.CommonRatingsNumber)
+    );
+    while(ratings != []) {
+        const user = ratings.shift();
+        moviesGlobalSetIds.push(user.reviews.filter(review => 
+            //TODO:filter lista negra
+            review.rate >= POSITIVE_RATE_MIN
+        ).sort((review1, review2) => review2 - review1));
+    }
+    while(moviesFilteredSet.length < number && moviesGlobalSetIds != []) {
+        const movie = moviesGlobalSetIds.shift();
+        const movieData = await peliculasTMDBResource.getTmdbRessource(movie.filmId);
+        if(movieData.genre_ids.find(genre1 => mainMovieData.genre_ids.find(genre2 => genre1 === genre2))) { // Tienen una categoria en comun
+            moviesFilteredSet.push(movieData);
+        }
+    }
+
     console.log("");
     console.log("-------------");
     console.log(" - GET por similitudes peliculas")
     console.log("-------------");
     console.log("");
 
-    res.send("<html><body><h1>Similitudes with film Id and user Id with " + (req.params.number || 5) + " peliculas...</h1></body></html>");
+    res.send(moviesFilteredSet);
 });
 
 // devuelve una lista de hasta NUMBER series  (5 por defecto), de similar categorías que otros usuarios han 

@@ -47,6 +47,19 @@ class PeliculasTMDBResource {
         //console.log(options);
         return request.get(url, options);
     }
+
+    // Get a TMDb ressource identified by his id.
+    static getTmdbRessource(imdbId){
+        const url = PeliculasTMDBResource.peliculasAleatorioTmdbResource("/find/" + imdbId);
+        //console.log(url);
+        const options = {
+            headers: PeliculasTMDBResource.requestHeaders(),
+            qs:      PeliculasTMDBResource.requestParams(), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+        }
+        //console.log(options);
+        return request.get(url, options);
+    }
+
 }
 
 module.exports = PeliculasTMDBResource;
