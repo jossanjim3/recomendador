@@ -187,7 +187,7 @@ router.get("/listaNegra/series", (req, res) => {
 
 //Añade la pelicula a la lista de peliculas que no se debe recomandar al usuario
 // ruta postman: http://localhost:3000/recomendador/listaNegra/pelicula/419704
-router.post("/listaNegra/pelicula/:peliculaId", (req, res) => {
+router.post("/listaNegra/pelicula/:peliculaId", async (req, res) => {
 
     console.log("");
     console.log("-------------");
@@ -198,21 +198,36 @@ router.post("/listaNegra/pelicula/:peliculaId", (req, res) => {
     var peliculaId = req.params.peliculaId; //para que funcione esto tienes que añadir body-parser
     console.log(" - req.body => pelicula: " + peliculaId);
 
+    // creo el objeto schema de lista negra
     const pelicula = { "idTmdb" : peliculaId }
-
-    //if (!estaEnListaNegra(peliculaId)) {
-        ListaNegra.create(pelicula, function(err, record) {
-            if (err) {
-                console.log(Date() + " - " + err);
-                res.sendStatus(500);
-            } else {
-                console.log("pelicula añadida: ", record._id, pelicula.idTmdb);
-                res.sendStatus(201);
-            }
-        }); 
-    //}
-     
-    //res.send("<html><body><h1>Lista negra</h1></body></html>")
+    
+    try {
+        // compruebo si esta en la lista negra
+        const storedDataArray = await ListaNegra.findOne({ 'idTmdb' : peliculaId });
+        console.log("esta en lista negra: " + storedDataArray);
+        if (!storedDataArray){
+            // si no esta en la lista negra lo añado
+            ListaNegra.create(pelicula, (error, record) => {
+                if (error) {
+                    console.log(Date() + " - " + err);
+                    res.sendStatus(500);
+                } else {
+                    console.log("pelicula añadida a la lista negra: ", record._id, pelicula.idTmdb);
+                    res.sendStatus(201);
+                }
+            }); 
+        } else{
+            console.log("ya existe pelicula en la lista negra: " + peliculaId);
+            res.json({ message: 'Pelicula ya existente en la lista negra!', peliculaId});
+        }
+        
+    }
+    catch (err) {
+        if (err) {
+            console.log("error: " + err);
+            throw new Error(err.message);
+        }
+    }   
 });
 
 //Añade la serie a la lista de series que no se debe recomandar al usuario
