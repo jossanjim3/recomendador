@@ -26,16 +26,20 @@ const peliculasTMDBResource = require('./peliculasTMDBResource');
 
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) peliculas populares de TMDB
 // ruta postman: http://localhost:3000/recomendador/aleatorio/peliculas
-router.get("/aleatorio/peliculas/:number?", (req, res) => {
+router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 
+    console.log("");
+    console.log("-------------");
     console.log(" - GET aleatorio peliculas TMDB")
+    console.log("-------------");
+    console.log("");
     
     // TODO recorrer el json devuelto por mdb, comprobar que la lista de peliculas no este incluida en la lista negra
     // TODO limitar por parametro el numero de peliculas devueltas, 5 por defecto como minimo si no se indica, o con una paginacion...
 
     // numero de peliculas a devolver pasado por parametro
     var number = req.query.number;
-    console.log("number: " + number);
+    console.log("number limit a devolver: " + number);
 
     if (number <= 0 || number == undefined){
         number = 5;
@@ -45,33 +49,48 @@ router.get("/aleatorio/peliculas/:number?", (req, res) => {
     peliculasRet = [];
 
     // devuelve la lista de peliculas aleatoria con buena puntuacion de la api de tmdb
-    peliculasTMDBResource.getAllPopularPeliculasAleatorias()
-    //peliculasTMDBResource.getAllTopRatedPeliculasAleatorias()
+    const peliculasTmdb = await peliculasTMDBResource.getAllPopularPeliculasAleatorias();
+    console.log("total peliculasTmdb: " + peliculasTmdb.results.length);
 
-        .then((body) => {
-            // recorro la lista de peliculas de Tmdb y .si el id esta añadido en la lista negra no lo añado en la
-            // lista de peliculas a devolver
-            const peliculas = body.results;
-            
-            for (var pelicula of peliculas) {
-                console.log("Pelicula Id: " + pelicula.id);
-                
+    console.log("");
+    console.log("Recorremos array...");
+    console.log("");
+
+    for (var pelicula of peliculasTmdb.results) {
+        console.log("Pelicula Id: " + pelicula.id);
+        
+        try {
+            // compruebo si esta en la lista negra
+            const storedDataArray = await ListaNegra.findOne({ 'idTmdb' : pelicula.id });
+            console.log("esta en lista negra: " + storedDataArray);
+            if (!storedDataArray){
+                // si no esta en la lista negra lo añado al array a devolver
                 peliculasRet.push(pelicula);
-
-                // hago el break cuando lleve number peliculas
-                if (peliculasRet.length == number){
-                    break;
-                }
-
+                console.log("añado pelicula: " + pelicula.id);
+            } else{
+                console.log("no añado pelicula: " + pelicula.id);
             }
 
-            res.send(peliculasRet);
-        })
+            console.log("-------------");
 
-        .catch((error) => {
-            console.log("error: " + error);
-            res.sendStatus(500);
-        })        
+            // hago el break cuando lleve number peliculas
+            if (peliculasRet.length == number){
+                console.log("devuelvo array con " + peliculasRet.length + " peliculas!");
+                break;
+            }
+            
+        }
+        catch (err) {
+            if (err) {
+                console.log("error: " + err);
+                throw new Error(err.message);
+            }
+        }                
+
+    }
+
+    res.send(peliculasRet);
+ 
 });
 
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
@@ -189,44 +208,5 @@ router.delete("/listaNegra/serie/:serieId", (req, res) => {
 // --------------------------
 // LISTA NEGRA
 // --------------------------
-
-// --------------------------
-// FUNCIONES AUXILIARES
-// --------------------------
-
-// es una funcion sincrona, tiene que ejecutarse por completo
-function estaEnListaNegra(idTmdb){
-    console.log("¿esta en lista negra el idTmdb? : " + idTmdb);
-
-    return ListaNegra.find({"idTmdb": idTmdb})
-        .then((storedDataArray) => {
-            console.log("storedDataArray: " + storedDataArray);
-            return true;
-        })
-
-        .catch(function(err){
-            if (err) {
-                console.log("error: " + err);
-                return false;
-            }
-        
-    });
-}
-
-// es una funcion sincrona, tiene que ejecutarse por completo
-async function getTodaListaNegra(){
-
-    try {
-        const storedDataArray = await ListaNegra.find({});
-        console.log("ALL storedDataArray: " + storedDataArray);
-        return storedDataArray;
-    }
-    catch (err) {
-        if (err) {
-            console.log("error: " + err);
-            throw new Error(err.message);
-        }
-    }
-}
 
 module.exports = router;
