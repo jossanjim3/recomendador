@@ -40,14 +40,11 @@ router.get("/aleatorio/peliculas/:number?", (req, res) => {
     if (number <= 0 || number == undefined){
         number = 5;
     }
-
-    // otengo la lista negra
-    var listaNegra = getTodaListaNegra();
-    console.log("listaNegra: " + listaNegra);
-
+    
     // array de peliculas que sera devuelta al usuario
     peliculasRet = [];
 
+    // devuelve la lista de peliculas aleatoria con buena puntuacion de la api de tmdb
     peliculasTMDBResource.getAllPopularPeliculasAleatorias()
     //peliculasTMDBResource.getAllTopRatedPeliculasAleatorias()
 
@@ -57,25 +54,15 @@ router.get("/aleatorio/peliculas/:number?", (req, res) => {
             const peliculas = body.results;
             
             for (var pelicula of peliculas) {
-                //console.log("Pelicula Id: " + pelicula.id);
+                console.log("Pelicula Id: " + pelicula.id);
                 
-                //var estaVetada = estaEnListaNegra(pelicula.id);
-                var estaVetada = listaNegra.includes(pelicula.id); 
-                console.log("estaVetada " + pelicula.id + " ? : result -> " + estaVetada);
+                peliculasRet.push(pelicula);
 
-                /* // si no esta en lista negra añado a lista de peliculas a devolver con maximo number
-                if (!estaVetada){
-                    peliculasRet.push(pelicula);
+                // hago el break cuando lleve number peliculas
+                if (peliculasRet.length == number){
+                    break;
+                }
 
-                    // hago el break cuando lleve number peliculas
-                    if (peliculasRet.length == number){
-                        break;
-                    }
-
-                } else {
-                    // ignoro la pelicula y no lo añado
-
-                } */
             }
 
             res.send(peliculasRet);
@@ -84,7 +71,7 @@ router.get("/aleatorio/peliculas/:number?", (req, res) => {
         .catch((error) => {
             console.log("error: " + error);
             res.sendStatus(500);
-        })
+        })        
 });
 
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
@@ -206,47 +193,40 @@ router.delete("/listaNegra/serie/:serieId", (req, res) => {
 // --------------------------
 // FUNCIONES AUXILIARES
 // --------------------------
+
+// es una funcion sincrona, tiene que ejecutarse por completo
 function estaEnListaNegra(idTmdb){
     console.log("¿esta en lista negra el idTmdb? : " + idTmdb);
 
-    ListaNegra.find({ "idTmdb": idTmdb}, (err, idVetado) => {
-        console.log("idVetado: " + idVetado);
-
-        if (err) {
-            console.log(Date() + " - " + err);
-            return false;
-
-        } else if (idVetado != null && idVetado != "") {
-            console.log("idTmdb encontrado en lista negra: " + idTmdb);
+    return ListaNegra.find({"idTmdb": idTmdb})
+        .then((storedDataArray) => {
+            console.log("storedDataArray: " + storedDataArray);
             return true;
+        })
 
-        } else {
-            return false;
-        }
-    });
-
-    return false;
-}
-
-function getTodaListaNegra(){
-
-    ListaNegra.find({}, (err, elementos) => {
-        if (err) {
-            console.log(Date() + " - " + err);
-            return false;
-
-        } else {
-            // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
-            elementos.map((elemento) => {                
-                elemento.cleanup();
-                //console.log("elemento: " + elemento);
-            });
-
-            console.log("elementos: " + elementos);
-            return elementos;
-        }
+        .catch(function(err){
+            if (err) {
+                console.log("error: " + err);
+                return false;
+            }
         
     });
+}
+
+// es una funcion sincrona, tiene que ejecutarse por completo
+async function getTodaListaNegra(){
+
+    try {
+        const storedDataArray = await ListaNegra.find({});
+        console.log("ALL storedDataArray: " + storedDataArray);
+        return storedDataArray;
+    }
+    catch (err) {
+        if (err) {
+            console.log("error: " + err);
+            throw new Error(err.message);
+        }
+    }
 }
 
 module.exports = router;
