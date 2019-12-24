@@ -33,7 +33,7 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
     console.log(" - GET aleatorio peliculas TMDB")
     console.log("-------------");
     console.log("");
-    
+
     // TODO recorrer el json devuelto por mdb, comprobar que la lista de peliculas no este incluida en la lista negra
     // TODO limitar por parametro el numero de peliculas devueltas, 5 por defecto como minimo si no se indica, o con una paginacion...
 
@@ -96,6 +96,12 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
 // (las que tienes buena puntuacion)
 router.get("/aleatorio/series/:number?",(req, res) => {
+    console.log("");
+    console.log("-------------");
+    console.log(" - GET aleatorio series TMDB")
+    console.log("-------------");
+    console.log("");
+
     res.send("<html><body><h1>Aleatorio with serie Id hasta " + (req.params.number || 5) + " series...</h1></body></html>");
 });
 
@@ -112,6 +118,13 @@ router.get("/aleatorio/series/:number?",(req, res) => {
 // sobre una película puntuada. La eleccion de estas peliculas se hace frente a las similaritudes 
 // de notacion del usuario con las notas de los otos usuarios.
 router.get("/porSimilitudes​/pelicula​/:filmId/:number?",(req, res) => {
+
+    console.log("");
+    console.log("-------------");
+    console.log(" - GET por similitudes peliculas")
+    console.log("-------------");
+    console.log("");
+
     res.send("<html><body><h1>Similitudes with film Id and user Id with " + (req.params.number || 5) + " peliculas...</h1></body></html>");
 });
 
@@ -119,6 +132,13 @@ router.get("/porSimilitudes​/pelicula​/:filmId/:number?",(req, res) => {
 // puntuado sobre una película puntuada. La eleccion de estas peliculas, o series, se hace frente a 
 // las similaritudes de notacion del usuario con las notas de los otos usuarios.
 router.get("/porSimilitudes/serie/:serieId/:number?",(req, res) => {
+
+    console.log("");
+    console.log("-------------");
+    console.log(" - GET por simmilitudes series")
+    console.log("-------------");
+    console.log("");
+
     res.send("<html><body><h1>Similitudes with serie Id and user Id with max " + (req.params.number || 5) + " series ...</h1></body></html>");
 });
 
@@ -132,7 +152,11 @@ router.get("/porSimilitudes/serie/:serieId/:number?",(req, res) => {
 
 //Devuelve la lista de peliculas que no se debe recomandar al usuario
 router.get("/listaNegra/peliculas", (req, res) => {
+    console.log("");
+    console.log("-------------");
     console.log(Date() + " - GET /listaNegra");
+    console.log("-------------");
+    console.log("");
 
     // como el filtro el vacio {} devuelve todos los elementos
     ListaNegra.find({}, (err, elementos) => {
@@ -151,13 +175,26 @@ router.get("/listaNegra/peliculas", (req, res) => {
 
 //Devuelve la lista de series que no se debe recomandar al usuario
 router.get("/listaNegra/series", (req, res) => {
+
+    console.log("");
+    console.log("-------------");
+    console.log(Date() + " - GET /listaNegra");
+    console.log("-------------");
+    console.log("");
+
     res.send("<html><body><h1>Lista negra</h1></body></html>")
 });
 
 //Añade la pelicula a la lista de peliculas que no se debe recomandar al usuario
 // ruta postman: http://localhost:3000/recomendador/listaNegra/pelicula/419704
 router.post("/listaNegra/pelicula/:peliculaId", (req, res) => {
-    console.log(Date() + " - POST /peliculaId");
+
+    console.log("");
+    console.log("-------------");
+    console.log(Date() + " - POST /peliculaId lista negra");
+    console.log("-------------");
+    console.log("");
+    
     var peliculaId = req.params.peliculaId; //para que funcione esto tienes que añadir body-parser
     console.log(" - req.body => pelicula: " + peliculaId);
 
@@ -180,24 +217,47 @@ router.post("/listaNegra/pelicula/:peliculaId", (req, res) => {
 
 //Añade la serie a la lista de series que no se debe recomandar al usuario
 router.post("/listaNegra/serie/:serieId", (req, res) => {
+    
+    console.log("");
+    console.log("-------------");
+    console.log(Date() + " - POST /serieId lista negra");
+    console.log("-------------");
+    console.log("");
+
     res.send("<html><body><h1>Lista negra</h1></body></html>")
 });
 
 //Retira la pelicula de la lista de peliculas que no se debe recomandar al usuario
 router.delete("/listaNegra/pelicula/:peliculaId", (req, res) => {
 
-    console.log(Date() + " - DELETE /contacts");
+    console.log("");
+    console.log("-------------");
+    console.log(Date() + " - DELETE /peliculaId lista negra");
+    console.log("-------------");
+    console.log("");
+
     var peliculaId = req.params.peliculaId; //para que funcione esto tienes que añadir body-parser
     console.log(" - req.body => pelicula: " + peliculaId);
-
+    
     // es necesario el id de la pelicula creado por mongoose
+    ListaNegra.deleteOne({ 'idTmdb' : peliculaId})
+        .then((response) => {
+            res.json({ message: 'Pelicula Deleted!', peliculaId});
+        })
+        .catch((err) =>{
+            console.log(Date() + " - " + err);
+            res.sendStatus(500);
+        })
+        ;
+
+    /* // es necesario el id de la pelicula creado por mongoose
     ListaNegra.findByIdAndRemove(peliculaId, (err) => {
         if (err){
             console.log(Date() + " - " + err);
             res.sendStatus(500);
         } else
             res.json({ message: 'Pelicula Deleted!', peliculaId});
-    });
+    }); */
 });
 
 //Retira la serie de la lista de series que no se debe recomandar al usuario
