@@ -2,7 +2,14 @@ const urljoin = require('url-join');
 const request = require('request-promise-native').defaults({json: true});
 
 class PeliculasTMDBResource {
-    
+
+    static seriesTmdbResource(url){
+        const urlAPI = "https://api.themoviedb.org/3/tv";
+        const peliculasServer = (process.env.PELICULAS_URL || urlAPI);
+
+        return urljoin(peliculasServer, url);
+    }
+
     // Get a list of movies on TMDB.
     static peliculasAleatorioTmdbResource(url){
         const urlAPI = "https://api.themoviedb.org/3/movie";
@@ -49,8 +56,18 @@ class PeliculasTMDBResource {
     }
 
     // Get a TMDb ressource identified by his id.
-    static getTmdbRessource(imdbId){
-        const url = PeliculasTMDBResource.peliculasAleatorioTmdbResource("/find/" + imdbId);
+    static getTmdbMovie(imdbId){
+        const url = PeliculasTMDBResource.peliculasAleatorioTmdbResource("/" + imdbId);
+        //console.log(url);
+        const options = {
+            headers: PeliculasTMDBResource.requestHeaders(),
+            qs:      PeliculasTMDBResource.requestParams(), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+        }
+        //console.log(options);
+        return request.get(url, options);
+    }
+    static getTmdbSerie(imdbId){
+        const url = PeliculasTMDBResource.seriesTmdbResource("/" + imdbId);
         //console.log(url);
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),
