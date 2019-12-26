@@ -18,9 +18,11 @@ class PeliculasTMDBResource {
     // parametros de la consulta a la api -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
     static requestParams(){
         const tmdbKey = (process.env.TMBD_KEY || '18268e82edbd92497a6d18853ddf8c57');
+        const language = 'es-ES';
 
         return {
-            api_key : tmdbKey // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+            api_key : tmdbKey, // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+            language : language
         }
     }
 

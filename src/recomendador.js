@@ -34,9 +34,6 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
     console.log("-------------");
     console.log("");
 
-    // TODO recorrer el json devuelto por mdb, comprobar que la lista de peliculas no este incluida en la lista negra
-    // TODO limitar por parametro el numero de peliculas devueltas, 5 por defecto como minimo si no se indica, o con una paginacion...
-
     // numero de peliculas a devolver pasado por parametro
     var number = req.query.number;
     console.log("number limit a devolver: " + number);
