@@ -11,6 +11,14 @@ class PeliculasTMDBResource {
         return urljoin(peliculasServer, url);
     }
 
+    // Get a list of series TV on TMDB.
+    static seriesAleatorioTmdbResource(url){
+        const urlAPI = "https://api.themoviedb.org/3/tv";
+        const seriesServer = (process.env.SERIES_URL || urlAPI);
+
+        return urljoin(seriesServer, url);
+    }
+
     static requestHeaders(){
         
     }
@@ -41,6 +49,30 @@ class PeliculasTMDBResource {
     // Get the top rated movies on TMDb.
     static getAllTopRatedPeliculasAleatorias(){
         const url = PeliculasTMDBResource.peliculasAleatorioTmdbResource("/top_rated");
+        //console.log(url);
+        const options = {
+            headers: PeliculasTMDBResource.requestHeaders(),
+            qs:      PeliculasTMDBResource.requestParams(), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+        }
+        //console.log(options);
+        return request.get(url, options);
+    }
+
+    // Get a list of the current popular movies on TMDb. This list updates daily.
+    static getAllPopularSeriesAleatorias(){
+        const url = PeliculasTMDBResource.seriesAleatorioTmdbResource("/popular");
+        //console.log(url);
+        const options = {
+            headers: PeliculasTMDBResource.requestHeaders(),
+            qs:      PeliculasTMDBResource.requestParams(), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+        }
+        //console.log(options);
+        return request.get(url, options);
+    }
+
+    // Get the top rated movies on TMDb.
+    static getAllTopRatedSeriesAleatorias(){
+        const url = PeliculasTMDBResource.seriesAleatorioTmdbResource("/top_rated");
         //console.log(url);
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),

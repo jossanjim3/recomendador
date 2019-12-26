@@ -92,14 +92,66 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
 // (las que tienes buena puntuacion)
-router.get("/aleatorio/series/:number?",(req, res) => {
+router.get("/aleatorio/series/:number?", async (req, res) => {
     console.log("");
     console.log("-------------");
     console.log(" - GET aleatorio series TMDB")
     console.log("-------------");
     console.log("");
 
-    res.send("<html><body><h1>Aleatorio with serie Id hasta " + (req.params.number || 5) + " series...</h1></body></html>");
+    // numero de series a devolver pasado por parametro
+    var number = req.query.number;
+    console.log("number limit a devolver: " + number);
+
+    if (number <= 0 || number == undefined){
+        number = 5;
+    }
+    
+    // array de series que sera devuelta al usuario
+    seriesRet = [];
+
+    // devuelve la lista de series aleatoria con buena puntuacion de la api de tmdb
+    const seriesTmdb = await peliculasTMDBResource.getAllPopularSeriesAleatorias();
+    console.log("total seriesTmdb: " + seriesTmdb.results.length);
+
+    console.log("");
+    console.log("Recorremos array...");
+    console.log("");
+
+    for (var serie of seriesTmdb.results) {
+        console.log("Serie Id: " + serie.id);
+        
+        try {
+            // compruebo si esta en la lista negra
+            const storedDataArray = await ListaNegra.findOne({ 'idTmdb' : serie.id });
+            console.log("esta en lista negra: " + storedDataArray);
+            if (!storedDataArray){
+                // si no esta en la lista negra lo añado al array a devolver
+                seriesRet.push(serie);
+                console.log("añado serie: " + serie.id);
+            } else{
+                console.log("no añado serie: " + serie.id);
+            }
+
+            console.log("-------------");
+
+            // hago el break cuando lleve number series
+            if (seriesRet.length == number){
+                console.log("devuelvo array con " + seriesRet.length + " series!");
+                break;
+            }
+            
+        }
+        catch (err) {
+            if (err) {
+                console.log("error: " + err);
+                throw new Error(err.message);
+            }
+        }                
+
+    }
+
+    res.send(seriesRet);
 });
 
 // --------------------------
