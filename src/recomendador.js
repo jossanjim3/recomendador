@@ -30,12 +30,14 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 
     console.log("");
     console.log("-------------");
-    console.log(" - GET aleatorio peliculas TMDB")
+    console.log(Date() + " - GET aleatorio peliculas TMDB")
     console.log("-------------");
     console.log("");
 
     // numero de peliculas a devolver pasado por parametro
     var number = req.query.number;
+    // olvidamos el parametro number y devuelve 20 recomendaciones. En la parte front con el selector se pone 5,10,15 o 20
+    number = 20;
     console.log("number limit a devolver: " + number);
 
     if (number <= 0 || number == undefined){
@@ -86,7 +88,17 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 
     }
 
-    res.send(peliculasRet);
+    console.log("devuelvo array con " + peliculasRet.length + " peliculas!");
+
+    //res.send(peliculasRet);
+    /* res.json({page: 1,
+            total_results: 10000,
+            total_pages: 500,
+            results : peliculasRet
+        }); */
+        res.json({
+                results : peliculasRet
+        });
  
 });
 
@@ -95,12 +107,14 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 router.get("/aleatorio/series/:number?", async (req, res) => {
     console.log("");
     console.log("-------------");
-    console.log(" - GET aleatorio series TMDB")
+    console.log(Date() + " - GET aleatorio series TMDB")
     console.log("-------------");
     console.log("");
 
     // numero de series a devolver pasado por parametro
     var number = req.query.number;
+    // olvidamos el parametro number y devuelve 20 recomendaciones. En la parte front con el selector se pone 5,10,15 o 20
+    number = 20;
     console.log("number limit a devolver: " + number);
 
     if (number <= 0 || number == undefined){
@@ -151,7 +165,10 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
 
     }
 
-    res.send(seriesRet);
+    console.log("devuelvo array con " + seriesRet.length + " series!");
+    
+    //res.send(seriesRet);
+    res.json({results : seriesRet});
 });
 
 // --------------------------
@@ -170,7 +187,7 @@ router.get("/porSimilitudes​/pelicula​/:filmId/:number?",(req, res) => {
 
     console.log("");
     console.log("-------------");
-    console.log(" - GET por similitudes peliculas")
+    console.log(Date() + " - GET por similitudes peliculas")
     console.log("-------------");
     console.log("");
 
@@ -184,7 +201,7 @@ router.get("/porSimilitudes/serie/:serieId/:number?",(req, res) => {
 
     console.log("");
     console.log("-------------");
-    console.log(" - GET por simmilitudes series")
+    console.log(Date() + " - GET por simmilitudes series")
     console.log("-------------");
     console.log("");
 
