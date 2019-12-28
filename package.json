@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/jossanjim3/recomendador#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "mongoose": "^5.8.1",
     "request": "^2.88.0",

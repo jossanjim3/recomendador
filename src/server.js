@@ -15,6 +15,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
+const cors= require('cors');
 
 var port = (process.env.PORT || 3000);
 
@@ -22,6 +23,7 @@ const BASE_URL_API = "/recomendador";
 
 var app = express();
 app.use(bodyParser.json());
+app.use(cors());
 
 // Our own routes requirement
 var recomendador = require("./recomendador.js");

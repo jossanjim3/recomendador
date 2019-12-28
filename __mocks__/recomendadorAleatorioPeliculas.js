@@ -1,6 +1,5 @@
 //__mocks__/recomendadorAleatorioPeliculas.js
-const data = {
-    results : [
+const data = [
                 {
                     "popularity": 454.192,
                     "vote_count": 1229,
@@ -42,9 +41,6 @@ const data = {
                     "overview": "En esta ocasión, los 'jugadores' vuelven al juego, pero sus personajes se han intercambiado entre sí, lo que ofrece un curioso plantel: los mismos héroes con distinta apariencia. Pero, ¿dónde está el resto de la gente? Los participantes sólo tienen una opción: jugar una vez más a esta peligrosa partida para descubrir qué es realmente lo que está sucediendo.",
                     "release_date": "2019-12-04"
                 }
-            ]
-};
+            ];
 
-export default function request(url) {
-    return data;
-}
+module.exports = {data};
