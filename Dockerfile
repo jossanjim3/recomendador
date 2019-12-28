@@ -8,6 +8,7 @@ COPY package-lock.json .
 RUN npm install
 
 COPY /src ./src
+COPY /views ./views
 
 EXPOSE 3000
 
