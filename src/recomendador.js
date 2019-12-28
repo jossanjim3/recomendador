@@ -15,8 +15,6 @@
 const express = require('express');
 var router = express.Router();
 
-var db = require('./db.js');
-
 const ListaNegra = require('./listaNegra');
 const peliculasTMDBResource = require('./peliculasTMDBResource');
 const reviewsRessource = require('./reviewsRessource');
@@ -114,7 +112,7 @@ router.get("/aleatorio/series/:number?",(req, res) => {
 // SIMILITUDES
 // --------------------------
 
-const POSITIVE_RATE_MIN = 6;
+const POSITIVE_RATE_MIN = 3;
 
 function absQuadraticMean(sum, elementsNumber) {
     return Math.abs(sum / Math.pow(elementsNumber, 2));
@@ -122,28 +120,30 @@ function absQuadraticMean(sum, elementsNumber) {
 
 async function getAndFormatRatings(mainFilmId) {
     const ratings = await reviewsRessource.getAllReviewsByUser();
-    //const ratings = [];
     //Formatar Ratings
     const userLists = Array.from(new Set(ratings.map(review => review.user)));
     const ratingsByUser = userLists.map(user => { return {
-        "user": user,
+        "id": user,
         "reviews": ratings.filter(review => review.user == user).map(review => { return { rating: review.rating, imdbId: review.imdbId } })
     }});
-    return ratingsByUser;
+    return ratingsByUser.filter(user => user.reviews.find(review => review.imdbId == mainFilmId) != null);
 }
 
 function substractCommonRates(ratings, mainUserRatings) {
+    ratings = ratings.filter(user => user.id != mainUserRatings.id);
     ratings.forEach(user =>  {
         user.CommonRatingsNumber = 0;
         user.CommonRatingsSum = 0;
         user.reviews.forEach(userRating => {
-            if((mainUserRating = mainUserRatings.find(review => userRating.imdbId == review.imdbId)) != null) {
+            let mainUserRating;
+            if((mainUserRating = mainUserRatings.reviews.find(review => userRating.imdbId == review.imdbId)) != null) {
                 userRating.rating -= mainUserRating.rating;
-                user.CommonRatingsSum += userRating.rating;
+                user.CommonRatingsSum += Math.abs(userRating.rating);
                 user.CommonRatingsNumber++;
             }
         })
     });
+    return ratings;
 }
 
 function sortProcessedUser(ratings) {
@@ -158,27 +158,43 @@ function getMoviesAndSeriesSet(sortedRatings, mainUserRatings) {
         const user = sortedRatings.shift();
         moviesAndSeriesGlobalSetIds.push(user.reviews.filter(review => 
             //TODO:filter lista negra
-            review.rate >= POSITIVE_RATE_MIN // Que esta puntuada positivamente
-            && !mainUserRatings.find(reviewMainUser => reviewMainUser.imdbId == review.imdbId) // Que no ha visto ya el usuario
-        ).sort((review1, review2) => review2 - review1));
+            review.rating >= POSITIVE_RATE_MIN // Que esta puntuada positivamente
+            && !mainUserRatings.reviews.find(reviewMainUser => reviewMainUser.imdbId == review.imdbId) // Que no ha visto ya el usuario
+        ).sort((review1, review2) => review2.rating - review1.rating));
     }
-    return moviesAndSeriesGlobalSetIds;
+    return moviesAndSeriesGlobalSetIds.flat();
 }
 
 async function checkMovies(moviesGlobalSetIds, mainFilmId, number) {
     const moviesFilteredSet = [];
     try {
-        const mainMovieData = await peliculasTMDBResource.getTmdbMovie(mainFilmId);
+        const mainMovieData = (await peliculasTMDBResource.getTmdbRessourceFromImdb(mainFilmId)).movie_results[0];
         while(moviesFilteredSet.length < number && moviesGlobalSetIds.length > 0) {
             const movie = moviesGlobalSetIds.shift();
             try {
-                const movieData =  await peliculasTMDBResource.getTmdbMovie(movie.filmId);
-                if(movieData !== null && movieData.genres.find(genre1 => mainMovieData.genres.find(genre2 => genre1 === genre2))) { // Tienen una categoria en comun
-                    moviesFilteredSet.push(movieData);
+                // Verifica que ya no esta añadido
+                if(!moviesFilteredSet.find(movieSet => movie.imdbId == movieSet.imdbId)) {
+                    const movieData =  (await peliculasTMDBResource.getTmdbRessourceFromImdb(movie.imdbId)).movie_results[0];
+                    if(movieData !== null && movieData.genre_ids.find(genre1 => mainMovieData.genre_ids.find(genre2 => genre1 === genre2))) { // Tienen una categoria en comun
+                        movieData.imdbId = movie.imdbId;
+                        moviesFilteredSet.push(movieData);
+                    }
                 }
-            } catch(err) {
-                
-            }
+            } catch(err) {}
+        }
+        if(moviesFilteredSet.length < number) {
+            let page = 1;
+            let similarMovies = {};
+            do {
+                similarMovies = await peliculasTMDBResource.getSimilaresPeliculas(mainFilmId, page);
+                while(moviesFilteredSet.length < number && similarMovies.results.length > 0) {
+                    const movieData = similarMovies.results.shift();
+                    if(!moviesFilteredSet.find(movieSet => movieData.id == movieSet.id)) {
+                        moviesFilteredSet.push(movieData);
+                    }
+                }
+                page++;
+            } while(moviesFilteredSet.length < number && page < similarMovies.total_pages)
         }
     } catch (err) {
         if (err) {
@@ -191,19 +207,34 @@ async function checkMovies(moviesGlobalSetIds, mainFilmId, number) {
 async function checkSeries(seriesGlobalSetIds, mainSerieId, number) {
     const seriesFilteredSet = [];
     try {
-        const mainSerieData = await peliculasTMDBResource.getTmdbSerie(mainSerieId);
+        const mainSerieData = (await peliculasTMDBResource.getTmdbRessourceFromImdb(mainSerieId)).tv_results[0];
         while(seriesFilteredSet.length < number && seriesGlobalSetIds.length > 0) {
             const serie = seriesGlobalSetIds.shift();
             try {
-                const serieData = await peliculasTMDBResource.getTmdbSerie(serie.id);
-                if(serieData !== null && serieData.genres.find(genre1 => mainSerieData.genres.find(genre2 => genre1 === genre2))) { // Verifica que tienen una categoria en comun
-                    seriesFilteredSet.push(serieData);
+                // Verifica que ya no esta añadido
+                if(!seriesFilteredSet.find(serieSet => serie.imdbId == serieSet.imdbId)) {
+                    const serieData = (await peliculasTMDBResource.getTmdbRessourceFromImdb(serie.imdbId)).tv_results[0];
+                    if(serieData !== null && serieData.genre_ids.find(genre1 => mainSerieData.genre_ids.find(genre2 => genre1 === genre2))) { // Verifica que tienen una categoria en comun
+                        serieData.imdbId = serie.imdbId;
+                        seriesFilteredSet.push(serieData);
+                    }
                 }
-            } catch(err) {
-                
-            }
+            } catch(err) {}
         }
-        
+        if(seriesFilteredSet.length < number) {
+            let page = 1;
+            let similarSeries = {};
+            do {
+                similarSeries = await peliculasTMDBResource.getSimilaresSeries(mainSerieId, page);
+                while(seriesFilteredSet.length < number && similarSeries.results.length > 0) {
+                    const serieData = similarSeries.results.shift();
+                    if(!seriesFilteredSet.find(serieSet => serieData.id == serieSet.id)) {
+                        seriesFilteredSet.push(serieData);
+                    }
+                }
+                page++;
+            } while(seriesFilteredSet.length < number && page < similarSeries.total_pages)
+        }
     } catch (err) {
         if (err) {
             console.log("error: " + err);
@@ -221,15 +252,20 @@ router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
     console.log(" - GET por similitudes peliculas")
     console.log("-------------");
     console.log("");
+    const userId ="agusnez" //TODO
     var number = req.params.number || 5;
-    const ratings = getAndFormatRatings();
-    const mainUserRatings = ratings.find(user => user.id == userId)
-    substractCommonRates(ratings, mainUserRatings);
-    const sortedRatings = sortProcessedUser(ratings);
-    const moviesGlobalSetIds = getMoviesAndSeriesSet(sortedRatings, mainUserRatings);
-    const moviesFilteredSet = await checkMovies(moviesGlobalSetIds, req.params.filmId, number);    
-
-    res.send(moviesFilteredSet);
+    const ratings = await getAndFormatRatings(req.params.filmId);
+    if(ratings) {
+        const mainUserRatings = ratings.find(user => user.id == userId)
+        const ratingsProcessed = substractCommonRates(ratings, mainUserRatings);
+        const sortedRatings = sortProcessedUser(ratingsProcessed);
+        const moviesGlobalSetIds = getMoviesAndSeriesSet(sortedRatings, mainUserRatings);
+        const moviesFilteredSet = await checkMovies(moviesGlobalSetIds, req.params.filmId, number);
+        res.send(moviesFilteredSet);
+    } else {
+        res.status(412);
+        res.send([])
+    }
 });
 
 // devuelve una lista de hasta NUMBER series  (5 por defecto), de similar categorías que otros usuarios han 
@@ -241,17 +277,21 @@ router.get("/porSimilitudes/serie/:serieId/:number?", async (req, res) => {
     console.log(" - GET por similitudes series")
     console.log("-------------");
     console.log("");
-
+    const userId ="agusnez" //TODO
     var number = req.params.number || 5;
-    console.log(req);
-    const ratings = getAndFormatRatings();
-    const mainUserRatings = ratings.find(user => user.id == userId)
-    substractCommonRates(ratings, mainUserRatings);
-    const sortedRatings = sortProcessedUser(ratings);
-    const seriesGlobalSetIds = getMoviesAndSeriesSet(sortedRatings, mainUserRatings);
-    const seriesFilteredSet = await checkSeries(seriesGlobalSetIds, req.params.serieId, number);
-   
-    res.send(seriesFilteredSet);
+    const ratings =  await getAndFormatRatings(req.params.serieId);
+    if(ratings) {
+        const mainUserRatings = ratings.find(user => user.id == userId)
+        const ratingsProcessed = substractCommonRates(ratings, mainUserRatings);
+        console.log(ratingsProcessed);
+        const sortedRatings = sortProcessedUser(ratingsProcessed);
+        const seriesGlobalSetIds = getMoviesAndSeriesSet(sortedRatings, mainUserRatings);
+        const seriesFilteredSet = await checkSeries(seriesGlobalSetIds, req.params.serieId, number);
+        res.send(seriesFilteredSet);
+    } else {
+        res.status(412);
+        res.send([])
+    }
 });
 
 // --------------------------
@@ -396,4 +436,4 @@ router.delete("/listaNegra/serie/:serieId", (req, res) => {
 // LISTA NEGRA
 // --------------------------
 
-module.exports = { router, getAndFormatRatings};
+module.exports = { router, getAndFormatRatings, substractCommonRates, sortProcessedUser, getMoviesAndSeriesSet, checkMovies, checkSeries };
