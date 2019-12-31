@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "jest"
+    "test": "jest",
+    "lint": "./node_modules/.bin/eslint --ignore-path .gitignore ."
   },
   "proxy": "http://localhost:3000",
   "repository": {
@@ -19,16 +20,24 @@
   },
   "homepage": "https://github.com/jossanjim3/recomendador#readme",
   "dependencies": {
+    "axios": "^0.19.0",
+    "eslint-config-strongloop": "^2.1.0",
     "express": "^4.17.1",
+    "mongodb": "^3.4.1",
     "mongoose": "^5.8.1",
+    "node-cache": "^5.1.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.8",
     "url-join": "^4.0.1",
     "util": "^0.12.1"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^6.8.0",
     "jest": "^24.9.0",
     "jest-extended": "^0.11.2",
+    "mocha": "^6.2.2",
+    "nock": "^11.7.0",
     "supertest": "^4.0.2"
   }
 }

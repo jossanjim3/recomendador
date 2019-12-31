@@ -13,6 +13,7 @@ listaNegraSchema.methods.cleanup = function(){
         };
 }
 
-const ListaNegra = mongoose.model('ListaNegra', listaNegraSchema);
+const ListaNegraPelis = mongoose.model('ListaNegraPelis', listaNegraSchema);
+const ListaNegraSeries = mongoose.model('ListaNegraSeries', listaNegraSchema);
 
-module.exports = ListaNegra;
+module.exports = { ListaNegraPelis, ListaNegraSeries };
