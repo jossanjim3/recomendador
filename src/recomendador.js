@@ -14,6 +14,7 @@
 
 const express = require('express');
 var router = express.Router();
+var mongoose = require('mongoose');
 
 const ListaNegraPelis = require('./listaNegra').ListaNegraPelis;
 const ListaNegraSeries = require('./listaNegra').ListaNegraSeries;
@@ -224,7 +225,6 @@ function getMoviesAndSeriesSet(sortedRatings, mainUserRatings) {
     while(sortedRatings.length > 0) {
         const user = sortedRatings.shift();
         moviesAndSeriesGlobalSetIds.push(user.reviews.filter(review => 
-            //TODO:filter lista negra
             review.rating >= POSITIVE_RATE_MIN // Que esta puntuada positivamente
             && !mainUserRatings.reviews.find(reviewMainUser => reviewMainUser.imdbId == review.imdbId) // Que no ha visto ya el usuario
         ).sort((review1, review2) => review2.rating - review1.rating));
@@ -317,22 +317,26 @@ async function checkSeries(seriesGlobalSetIds, mainSerieId, number) {
 }
 
 async function estaEnListaNegraPelis(ressource) {
+    if(mongoose.connection.readyState != 1) return false;
     try {
         return !(await ListaNegraPelis.findOne({ 'idTmdb' : ressource.id }));
     } catch (err) {
         if (err) {
             console.log("error: " + err);
         }
+        return false;
     }
 }
 
 async function estaEnListaNegraSeries(ressource) {
+    if(mongoose.connection.readyState != 1) return false;
     try {
         return (await ListaNegraSeries.findOne({ 'idTmdb' : ressource.id })) != null;
     } catch (err) {
         if (err) {
             console.log("error: " + err);
         }
+        return false;
     }
 }
 
