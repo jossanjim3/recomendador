@@ -22,6 +22,7 @@ const BM_ID = "tt2085059";
 const C_ID = "tt7366338";
 const I_ID = "tt0816692";
 const G_ID = "tt1454468";
+const TMDB_G_ID = "49047";
 
 const namesToReviewsNumber = new Map([
     ["piegir" , 2],
@@ -39,6 +40,7 @@ const checkMovies = require('../src/recomendador').checkMovies;
 const checkSeries = require('../src/recomendador').checkSeries;
 
 const API_KEY = '?api_key=18268e82edbd92497a6d18853ddf8c57';
+const EXT_SOURCE = "&external_source=imdb_id";
 
 function mockReviewsSet1() {
     nock('http://reviews-api.herokuapp.com/v1')
@@ -59,31 +61,31 @@ function mockReviewsSet3() {
 
 function mockReviewsRessources() {
     nock('https://api.themoviedb.org/3/find')
-            .get('/' + N_ID + API_KEY)
+            .get('/' + N_ID + API_KEY + EXT_SOURCE)
             .reply(200, narcosData);
     nock('https://api.themoviedb.org/3/find')
-            .get('/' + LCADP_ID + API_KEY)
+            .get('/' + LCADP_ID + API_KEY + EXT_SOURCE)
             .reply(200, laCasaDePapelData);
     nock('https://api.themoviedb.org/3/find')
-            .get('/' + TWD_ID + API_KEY)
+            .get('/' + TWD_ID + API_KEY + EXT_SOURCE)
             .reply(200, theWalkingDeadData);
     nock('https://api.themoviedb.org/3/find')
-            .get('/' + BB_ID + API_KEY)
+            .get('/' + BB_ID + API_KEY + EXT_SOURCE)
             .reply(200, breakingBadData);
      nock('https://api.themoviedb.org/3/find')
-            .get('/' + BM_ID + API_KEY)
+            .get('/' + BM_ID + API_KEY + EXT_SOURCE)
             .reply(200, blackMirrorData);
     nock('https://api.themoviedb.org/3/find')
-            .get('/' + C_ID + API_KEY)
+            .get('/' + C_ID + API_KEY + EXT_SOURCE)
             .reply(200, chernobylData);
     nock('https://api.themoviedb.org/3/find')
-            .get('/' + I_ID + API_KEY)
+            .get('/' + I_ID + API_KEY + EXT_SOURCE)
             .reply(200, interstellarData);
     nock('https://api.themoviedb.org/3/find')
-            .get('/' + G_ID + API_KEY)
+            .get('/' + G_ID + API_KEY + EXT_SOURCE)
             .reply(200, gravityData);
     nock('https://api.themoviedb.org/3/movie')
-            .get('/' + G_ID + "/similar" + API_KEY + "&page=1")
+            .get('/' + TMDB_G_ID + "/similar" + API_KEY + "&page=1")
             .reply(200, gravityPelisSimilares);    
 }
 

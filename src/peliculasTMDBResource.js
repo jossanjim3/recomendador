@@ -1,6 +1,12 @@
 const urljoin = require('url-join');
 const request = require('request-promise-native').defaults({json: true});
 
+const NodeCache = require( "node-cache" );
+const tmdbCache = new NodeCache( { stdTTL: 300, checkperiod: 60, useClones: false } );
+const imdbResourcePrefix = "imdb_";
+const similaresPelisPrefix = "similares_pelis_";
+const similaresSeriesPrefix = "similares_series_";
+
 class PeliculasTMDBResource {
 
     static imdbResource(url){
@@ -32,16 +38,9 @@ class PeliculasTMDBResource {
     // parametros de la consulta a la api -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
     static requestParams(page){
         const tmdbKey = (process.env.TMBD_KEY || '18268e82edbd92497a6d18853ddf8c57');
-        if(page)
-            return {
-                api_key : tmdbKey, // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
-                page: page
-            }
-        else
-            return {
-                api_key : tmdbKey // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
-            }
-        
+        return {
+            api_key : tmdbKey, // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+        }
     }
 
     // Get a list of the current popular movies on TMDb. This list updates daily.
@@ -69,36 +68,24 @@ class PeliculasTMDBResource {
     }
 
     static getTmdbRessourceFromImdb(imdbId){
+        let cachedResponse = tmdbCache.get(imdbResourcePrefix + imdbId);
         const url = PeliculasTMDBResource.imdbResource("/" + imdbId);
-        //console.log(url);
-        const options = {
-            headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
-        }
-        //console.log(options);
-        return request.get(url, options);
+        const options = "?api_key=" + PeliculasTMDBResource.requestParams().api_key + "&external_source=imdb_id";
+        return cachedResponse != undefined ? cachedResponse : request.get(url + options, (_, resp, body) => { if(resp) tmdbCache.set(imdbResourcePrefix + imdbId, body)});
     }
 
     static getSimilaresPeliculas(filmId, page){
+        let cachedResponse = tmdbCache.get(similaresPelisPrefix + filmId + "_" + page);
         const url = PeliculasTMDBResource.peliculasAleatorioTmdbResource("/" + filmId + "/similar");
-        //console.log(url);
-        const options = {
-            headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(page), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57
-        }
-        //console.log(options);
-        return request.get(url, options);
+        const options = "?api_key=" + PeliculasTMDBResource.requestParams().api_key + "&page=" + page;
+        return cachedResponse != undefined ? cachedResponse : request.get(url + options, (_, resp, body) => { if(resp) tmdbCache.set(similaresPelisPrefix + filmId + "_" + page, body)});
     }
 
     static getSimilaresSeries(serieId, page){
+        let cachedResponse = tmdbCache.get(similaresSeriesPrefix + serieId + "_" + page);
         const url = PeliculasTMDBResource.seriesTmdbResource("/" + serieId + "/similar");
-        //console.log(url);
-        const options = {
-            headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(page), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57
-        }
-        //console.log(options);
-        return request.get(url, options);
+        const options = "?api_key=" + PeliculasTMDBResource.requestParams().api_key + "&page=" + page;
+        return cachedResponse != undefined ? cachedResponse : request.get(url + options, (_, resp, body) => { if(resp) tmdbCache.set(similaresSeriesPrefix + serieId + "_" + page, body)});
     }
 
 }

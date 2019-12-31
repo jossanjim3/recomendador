@@ -186,7 +186,7 @@ async function checkMovies(moviesGlobalSetIds, mainFilmId, number) {
             let page = 1;
             let similarMovies = {};
             do {
-                similarMovies = await peliculasTMDBResource.getSimilaresPeliculas(mainFilmId, page);
+                similarMovies = await peliculasTMDBResource.getSimilaresPeliculas(mainMovieData.id, page);
                 while(moviesFilteredSet.length < number && similarMovies.results.length > 0) {
                     const movieData = similarMovies.results.shift();
                     if(!moviesFilteredSet.find(movieSet => movieData.id == movieSet.id)) {
@@ -225,7 +225,7 @@ async function checkSeries(seriesGlobalSetIds, mainSerieId, number) {
             let page = 1;
             let similarSeries = {};
             do {
-                similarSeries = await peliculasTMDBResource.getSimilaresSeries(mainSerieId, page);
+                similarSeries = await peliculasTMDBResource.getSimilaresSeries(mainSerieData.id, page);
                 while(seriesFilteredSet.length < number && similarSeries.results.length > 0) {
                     const serieData = similarSeries.results.shift();
                     if(!seriesFilteredSet.find(serieSet => serieData.id == serieSet.id)) {
@@ -282,8 +282,8 @@ router.get("/porSimilitudes/serie/:serieId/:number?", async (req, res) => {
     const ratings =  await getAndFormatRatings(req.params.serieId);
     if(ratings) {
         const mainUserRatings = ratings.find(user => user.id == userId)
+        console.log(mainUserRatings);
         const ratingsProcessed = substractCommonRates(ratings, mainUserRatings);
-        console.log(ratingsProcessed);
         const sortedRatings = sortProcessedUser(ratingsProcessed);
         const seriesGlobalSetIds = getMoviesAndSeriesSet(sortedRatings, mainUserRatings);
         const seriesFilteredSet = await checkSeries(seriesGlobalSetIds, req.params.serieId, number);
