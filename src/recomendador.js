@@ -29,15 +29,14 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 
     console.log("");
     console.log("-------------");
-    console.log(" - GET aleatorio peliculas TMDB")
+    console.log(Date() + " - GET aleatorio peliculas TMDB")
     console.log("-------------");
     console.log("");
 
-    // TODO recorrer el json devuelto por mdb, comprobar que la lista de peliculas no este incluida en la lista negra
-    // TODO limitar por parametro el numero de peliculas devueltas, 5 por defecto como minimo si no se indica, o con una paginacion...
-
     // numero de peliculas a devolver pasado por parametro
     var number = req.query.number;
+    // olvidamos el parametro number y devuelve 20 recomendaciones. En la parte front con el selector se pone 5,10,15 o 20
+    number = 20;
     console.log("number limit a devolver: " + number);
 
     if (number <= 0 || number == undefined){
@@ -88,20 +87,87 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 
     }
 
-    res.send(peliculasRet);
+    console.log("devuelvo array con " + peliculasRet.length + " peliculas!");
+
+    //res.send(peliculasRet);
+    /* res.json({page: 1,
+            total_results: 10000,
+            total_pages: 500,
+            results : peliculasRet
+        }); */
+        res.json({
+                results : peliculasRet
+        });
  
 });
 
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
 // (las que tienes buena puntuacion)
-router.get("/aleatorio/series/:number?",(req, res) => {
+router.get("/aleatorio/series/:number?", async (req, res) => {
     console.log("");
     console.log("-------------");
-    console.log(" - GET aleatorio series TMDB")
+    console.log(Date() + " - GET aleatorio series TMDB")
     console.log("-------------");
     console.log("");
 
-    res.send("<html><body><h1>Aleatorio with serie Id hasta " + (req.params.number || 5) + " series...</h1></body></html>");
+    // numero de series a devolver pasado por parametro
+    var number = req.query.number;
+    // olvidamos el parametro number y devuelve 20 recomendaciones. En la parte front con el selector se pone 5,10,15 o 20
+    number = 20;
+    console.log("number limit a devolver: " + number);
+
+    if (number <= 0 || number == undefined){
+        number = 5;
+    }
+    
+    // array de series que sera devuelta al usuario
+    seriesRet = [];
+
+    // devuelve la lista de series aleatoria con buena puntuacion de la api de tmdb
+    const seriesTmdb = await peliculasTMDBResource.getAllPopularSeriesAleatorias();
+    console.log("total seriesTmdb: " + seriesTmdb.results.length);
+
+    console.log("");
+    console.log("Recorremos array...");
+    console.log("");
+
+    for (var serie of seriesTmdb.results) {
+        console.log("Serie Id: " + serie.id);
+        
+        try {
+            // compruebo si esta en la lista negra
+            const storedDataArray = await ListaNegra.findOne({ 'idTmdb' : serie.id });
+            console.log("esta en lista negra: " + storedDataArray);
+            if (!storedDataArray){
+                // si no esta en la lista negra lo añado al array a devolver
+                seriesRet.push(serie);
+                console.log("añado serie: " + serie.id);
+            } else{
+                console.log("no añado serie: " + serie.id);
+            }
+
+            console.log("-------------");
+
+            // hago el break cuando lleve number series
+            if (seriesRet.length == number){
+                console.log("devuelvo array con " + seriesRet.length + " series!");
+                break;
+            }
+            
+        }
+        catch (err) {
+            if (err) {
+                console.log("error: " + err);
+                throw new Error(err.message);
+            }
+        }                
+
+    }
+
+    console.log("devuelvo array con " + seriesRet.length + " series!");
+    
+    //res.send(seriesRet);
+    res.json({results : seriesRet});
 });
 
 // --------------------------
@@ -187,8 +253,9 @@ async function checkMovies(moviesGlobalSetIds, mainFilmId, number) {
             let similarMovies = {};
             do {
                 similarMovies = await peliculasTMDBResource.getSimilaresPeliculas(mainMovieData.id, page);
-                while(moviesFilteredSet.length < number && similarMovies.results.length > 0) {
-                    const movieData = similarMovies.results.shift();
+                similarMoviesSet = similarMovies.results.slice(0); // se hace una copia profunda
+                while(moviesFilteredSet.length < number && similarMoviesSet.length > 0) {
+                    const movieData = similarMoviesSet.shift();
                     if(!moviesFilteredSet.find(movieSet => movieData.id == movieSet.id)) {
                         moviesFilteredSet.push(movieData);
                     }
@@ -226,8 +293,9 @@ async function checkSeries(seriesGlobalSetIds, mainSerieId, number) {
             let similarSeries = {};
             do {
                 similarSeries = await peliculasTMDBResource.getSimilaresSeries(mainSerieData.id, page);
-                while(seriesFilteredSet.length < number && similarSeries.results.length > 0) {
-                    const serieData = similarSeries.results.shift();
+                similarSeriesSet = similarSeries.results.slice(0); // se hace una copia profunda
+                while(seriesFilteredSet.length < number && similarSeriesSet.length > 0) {
+                    const serieData = similarSeriesSet.shift();
                     if(!seriesFilteredSet.find(serieSet => serieData.id == serieSet.id)) {
                         seriesFilteredSet.push(serieData);
                     }
@@ -249,7 +317,7 @@ async function checkSeries(seriesGlobalSetIds, mainSerieId, number) {
 router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
     console.log("");
     console.log("-------------");
-    console.log(" - GET por similitudes peliculas")
+    console.log(Date() + " - GET por similitudes peliculas")
     console.log("-------------");
     console.log("");
     const userId ="agusnez" //TODO
@@ -274,7 +342,7 @@ router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
 router.get("/porSimilitudes/serie/:serieId/:number?", async (req, res) => {
     console.log("");
     console.log("-------------");
-    console.log(" - GET por similitudes series")
+    console.log(Date() + " - GET por simmilitudes series")
     console.log("-------------");
     console.log("");
     const userId ="agusnez" //TODO
@@ -282,7 +350,6 @@ router.get("/porSimilitudes/serie/:serieId/:number?", async (req, res) => {
     const ratings =  await getAndFormatRatings(req.params.serieId);
     if(ratings) {
         const mainUserRatings = ratings.find(user => user.id == userId)
-        console.log(mainUserRatings);
         const ratingsProcessed = substractCommonRates(ratings, mainUserRatings);
         const sortedRatings = sortProcessedUser(ratingsProcessed);
         const seriesGlobalSetIds = getMoviesAndSeriesSet(sortedRatings, mainUserRatings);
