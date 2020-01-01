@@ -1,6 +1,10 @@
 language: node_js
 node_js:
   - "stable"
+services:
+  - mongodb
+before_script:
+  - sleep 15
 deploy:
   skip_cleanup: true
   provider: heroku
