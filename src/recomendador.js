@@ -222,8 +222,6 @@ function sortProcessedUser(ratings) {
 
 function getMoviesAndSeriesSet(sortedRatings, mainUserRatings) {
     try {
-        console.log("sortedRatings: " + JSON.stringify(sortedRatings))
-        console.log("mainUserRatings: " + JSON.stringify(mainUserRatings))
         const moviesAndSeriesGlobalSetIds = [];
         while(sortedRatings.length > 0) {
             const user = sortedRatings.shift();
@@ -232,12 +230,12 @@ function getMoviesAndSeriesSet(sortedRatings, mainUserRatings) {
                 && !mainUserRatings.reviews.find(reviewMainUser => reviewMainUser.imdbId == review.imdbId) // Que no ha visto ya el usuario
             ).sort((review1, review2) => review2.rating - review1.rating));
         }
-        console.log("moviesAndSeriesGlobalSetIds: " + JSON.stringify(moviesAndSeriesGlobalSetIds))
         return moviesAndSeriesGlobalSetIds.flat();
     } catch(err) {
         if (err) {
             console.log("error: " + err);
         }
+        return [];
     }
     
 }
