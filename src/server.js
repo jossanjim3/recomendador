@@ -19,15 +19,15 @@ const path = require('path');
 
 var port = (process.env.PORT || 3000);
 
-const BASE_URL_API = "/recomendador";
+const BASE_URL_API = "/recomendador/v1";
 
-var whitelist = ['http://localhost:8000', 'http://127.0.0.1:8000/']
+var whitelist = ['http://localhost:8000', 'http://127.0.0.1:8000/', 'http://127.0.0.1:3000/']
 var app = express();
 app.use(bodyParser.json());
 
 var corsOptions = {
     origin: function (origin, callback) {
-      if (whitelist.indexOf(origin) !== -1) {
+      if (!origin || whitelist.indexOf(origin) !== -1) {
         callback(null, true)
       } else {
         callback(new Error('Not allowed by CORS'))
@@ -35,7 +35,8 @@ var corsOptions = {
     }
   }
   
-app.use(cors(corsOptions))
+//app.use(cors(corsOptions))
+app.use(cors());
 
 // Our own routes requirement
 var recomendador = require("./recomendador.js").router;

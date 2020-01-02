@@ -24,6 +24,7 @@
     "cors": "^2.8.5",
     "eslint-config-strongloop": "^2.1.0",
     "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.4.1",
     "mongoose": "^5.8.1",
     "node-cache": "^5.1.0",
