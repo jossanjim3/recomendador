@@ -604,7 +604,7 @@ router.delete("/listaNegra/pelicula/:peliculaId", (req, res) => {
     // es necesario el id de la pelicula creado por mongoose
     ListaNegraPelis.deleteOne({ 'idTmdb' : peliculaId})
         .then((response) => {
-            console.log("Pelicula Deleted!: " + seriesId);
+            console.log("Pelicula Deleted!: " + peliculaId);
             res.json({ message: 'Pelicula Deleted!', peliculaId});
         })
         .catch((err) =>{
@@ -637,7 +637,7 @@ router.delete("/listaNegra/serie/:serieId", (req, res) => {
     // es necesario el id de la pelicula creado por mongoose
     ListaNegraSeries.deleteOne({ 'idTmdb' : serieId})
         .then((response) => {
-            console.log("Serie Deleted!: " + seriesId);
+            console.log("Serie Deleted!: " + serieId);
             res.json({ message: 'Serie Deleted!', serieId});
         })
         .catch((err) =>{
