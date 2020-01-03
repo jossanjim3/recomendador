@@ -26,7 +26,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Our own routes requirement
-var recomendador = require("./recomendador.js");
+var recomendador = require("./recomendador.js").router;
 
 app.use(BASE_URL_API, recomendador);
 
