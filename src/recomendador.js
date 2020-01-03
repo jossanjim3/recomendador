@@ -21,6 +21,9 @@ const ListaNegraSeries = require('./listaNegra').ListaNegraSeries;
 const peliculasTMDBResource = require('./peliculasTMDBResource');
 const reviewsRessource = require('./reviewsRessource');
 
+let peliculasRet = [];
+let seriesRet = [];
+
 // --------------------------
 // ALEATORIOS
 // --------------------------
@@ -39,18 +42,43 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
     var number = req.query.number;
     // olvidamos el parametro number y devuelve 20 recomendaciones. En la parte front con el selector se pone 5,10,15 o 20
     number = 20;
-    console.log("number limit a devolver: " + number);
+    console.log("number limit peliculas a devolver: " + number);
 
     if (number <= 0 || number == undefined){
         number = 5;
     }
     
+    var page = 1; // por defecto trae la pagina numero 1
+
     // array de peliculas que sera devuelta al usuario
-    peliculasRet = [];
+    //peliculasRet = [];  // creada como variable global
+
+    while(peliculasRet.length < 20){
+
+        await obtenerPeliculasAleatoriasTmdb(page);
+        page = page + 1;
+
+    }
+
+    console.log("************* devuelvo array con " + peliculasRet.length + " peliculas!");
+
+    //res.send(peliculasRet);
+    /* res.json({page: 1,
+            total_results: 10000,
+            total_pages: 500,
+            results : peliculasRet
+        }); */
+        res.json({
+                results : peliculasRet
+        });
+ 
+});
+
+async function obtenerPeliculasAleatoriasTmdb(page){
 
     // devuelve la lista de peliculas aleatoria con buena puntuacion de la api de tmdb
-    const peliculasTmdb = await peliculasTMDBResource.getAllPopularPeliculasAleatorias();
-    console.log("total peliculasTmdb: " + peliculasTmdb.results.length);
+    const peliculasTmdb = await peliculasTMDBResource.getAllPopularPeliculasAleatorias(page);
+    //console.log("total peliculasTmdb: " + peliculasTmdb.results.length);
 
     console.log("");
     console.log("Recorremos array...");
@@ -74,10 +102,11 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
             console.log("-------------");
 
             // hago el break cuando lleve number peliculas
-            if (peliculasRet.length == number){
+            // añado mas por si añade a la lista negra desde el front
+            /* if (peliculasRet.length == number){
                 console.log("devuelvo array con " + peliculasRet.length + " peliculas!");
                 break;
-            }
+            } */
             
         }
         catch (err) {
@@ -89,19 +118,8 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 
     }
 
-    console.log("devuelvo array con " + peliculasRet.length + " peliculas!");
-
-    //res.send(peliculasRet);
-    /* res.json({page: 1,
-            total_results: 10000,
-            total_pages: 500,
-            results : peliculasRet
-        }); */
-        res.json({
-                results : peliculasRet
-        });
- 
-});
+    return peliculasRet;
+}
 
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
 // (las que tienes buena puntuacion)
@@ -122,12 +140,28 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
         number = 5;
     }
     
-    // array de series que sera devuelta al usuario
-    seriesRet = [];
+    var page = 1; // por defecto trae la pagina numero 1
 
+    // array de series que sera devuelta al usuario
+    //seriesRet = []; // creada como variable global
+
+    while(seriesRet.length < 20){
+
+        await obtenerSeriesAleatoriasTmdb(page);
+        page = page + 1;
+
+    }
+
+    console.log("************* devuelvo array con " + seriesRet.length + " series!");
+    
+    //res.send(seriesRet);
+    res.json({results : seriesRet});
+});
+
+async function obtenerSeriesAleatoriasTmdb(page){
     // devuelve la lista de series aleatoria con buena puntuacion de la api de tmdb
-    const seriesTmdb = await peliculasTMDBResource.getAllPopularSeriesAleatorias();
-    console.log("total seriesTmdb: " + seriesTmdb.results.length);
+    const seriesTmdb = await peliculasTMDBResource.getAllPopularSeriesAleatorias(page);
+    //console.log("total seriesTmdb: " + seriesTmdb.results.length);
 
     console.log("");
     console.log("Recorremos array...");
@@ -151,10 +185,11 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
             console.log("-------------");
 
             // hago el break cuando lleve number series
-            if (seriesRet.length == number){
+            // añado mas por si añade a la lista negra desde el front
+            /* if (seriesRet.length == number){
                 console.log("devuelvo array con " + seriesRet.length + " series!");
                 break;
-            }
+            } */
             
         }
         catch (err) {
@@ -166,11 +201,8 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
 
     }
 
-    console.log("devuelvo array con " + seriesRet.length + " series!");
-    
-    //res.send(seriesRet);
-    res.json({results : seriesRet});
-});
+    return seriesRet;
+}
 
 // --------------------------
 // FIN ALEATORIOS

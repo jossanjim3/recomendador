@@ -50,53 +50,54 @@ class PeliculasTMDBResource {
 
         return {
             api_key : tmdbKey, // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
-            language : language
+            language : language,
+            page : page
         }
     }
 
     // Get a list of the current popular movies on TMDb. This list updates daily.
-    static getAllPopularPeliculasAleatorias(){
+    static getAllPopularPeliculasAleatorias(page){
         const url = PeliculasTMDBResource.peliculasAleatorioTmdbResource("/popular");
         //console.log(url);
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+            qs:      PeliculasTMDBResource.requestParams(page), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
         }
         //console.log(options);
         return request.get(url, options);
     }
 
     // Get the top rated movies on TMDb.
-    static getAllTopRatedPeliculasAleatorias(){
+    static getAllTopRatedPeliculasAleatorias(page){
         const url = PeliculasTMDBResource.peliculasAleatorioTmdbResource("/top_rated");
         //console.log(url);
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+            qs:      PeliculasTMDBResource.requestParams(page), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
         }
         //console.log(options);
         return request.get(url, options);
     }
 
     // Get a list of the current popular movies on TMDb. This list updates daily.
-    static getAllPopularSeriesAleatorias(){
+    static getAllPopularSeriesAleatorias(page){
         const url = PeliculasTMDBResource.seriesAleatorioTmdbResource("/popular");
         //console.log(url);
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+            qs:      PeliculasTMDBResource.requestParams(page), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
         }
         //console.log(options);
         return request.get(url, options);
     }
 
     // Get the top rated movies on TMDb.
-    static getAllTopRatedSeriesAleatorias(){
+    static getAllTopRatedSeriesAleatorias(page){
         const url = PeliculasTMDBResource.seriesAleatorioTmdbResource("/top_rated");
         //console.log(url);
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+            qs:      PeliculasTMDBResource.requestParams(page), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
         }
         //console.log(options);
         return request.get(url, options);
