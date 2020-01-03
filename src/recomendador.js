@@ -569,12 +569,13 @@ router.post("/listaNegra/pelicula/:peliculaId", async (req, res) => {
                     res.sendStatus(500);
                 } else {
                     console.log("pelicula añadida a la lista negra: ", record._id, pelicula.idTmdb);
-                    res.sendStatus(201);
+                    //res.sendStatus(201);
+                    res.json({ anadido: 'SI', message: 'Pelicula añadida a la lista negra!', peliculaId});
                 }
             }); 
         } else{
             console.log("ya existe pelicula en la lista negra: " + peliculaId);
-            res.json({ message: 'Pelicula ya existente en la lista negra!', peliculaId});
+            res.json({ anadido: 'NO', message: 'Pelicula ya existente en la lista negra!', peliculaId});
         }
         
     }
@@ -620,12 +621,13 @@ router.post("/listaNegra/serie/:serieId", async (req, res) => {
                     res.sendStatus(500);
                 } else {
                     console.log("serie añadida a la lista negra: ", record._id, serie.idTmdb);
-                    res.sendStatus(201);
+                    //res.sendStatus(201);
+                    res.json({ anadido : 'SI', message: 'Serie añadida a la lista negra!', serieId});
                 }
             }); 
         } else{
             console.log("ya existe serie en la lista negra: " + serieId);
-            res.json({ message: 'Serie ya existente en la lista negra!', serieId});
+            res.json({ anadido : 'NO', message: 'Serie ya existente en la lista negra!', serieId});
         }
         
     }
