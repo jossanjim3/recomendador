@@ -14,11 +14,12 @@
 
 const express = require('express');
 var router = express.Router();
+var mongoose = require('mongoose');
 
-var db = require('./db.js');
-
-const ListaNegra = require('./listaNegra');
+const ListaNegraPelis = require('./listaNegra').ListaNegraPelis;
+const ListaNegraSeries = require('./listaNegra').ListaNegraSeries;
 const peliculasTMDBResource = require('./peliculasTMDBResource');
+const reviewsRessource = require('./reviewsRessource');
 
 // --------------------------
 // ALEATORIOS
@@ -60,7 +61,7 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
         
         try {
             // compruebo si esta en la lista negra
-            const storedDataArray = await ListaNegra.findOne({ 'idTmdb' : pelicula.id });
+            const storedDataArray = await ListaNegraPelis.findOne({ 'idTmdb' : pelicula.id });
             console.log("esta en lista negra: " + storedDataArray);
             if (!storedDataArray){
                 // si no esta en la lista negra lo añado al array a devolver
@@ -137,7 +138,7 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
         
         try {
             // compruebo si esta en la lista negra
-            const storedDataArray = await ListaNegra.findOne({ 'idTmdb' : serie.id });
+            const storedDataArray = await ListaNegraSeries.findOne({ 'idTmdb' : serie.id });
             console.log("esta en lista negra: " + storedDataArray);
             if (!storedDataArray){
                 // si no esta en la lista negra lo añado al array a devolver
@@ -179,33 +180,223 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
 // SIMILITUDES
 // --------------------------
 
+const POSITIVE_RATE_MIN = 3;
+
+function absQuadraticMean(sum, elementsNumber) {
+    return Math.abs(sum / Math.pow(elementsNumber, 2));
+}
+
+async function getAndFormatRatings(mainFilmId) {
+    const ratings = await reviewsRessource.getAllReviewsByUser();
+    //Formatar Ratings
+    const userLists = Array.from(new Set(ratings.map(review => review.user)));
+    const ratingsByUser = userLists.map(user => { return {
+        "id": user,
+        "reviews": ratings.filter(review => review.user == user).map(review => { return { rating: review.rating, imdbId: review.imdbId } })
+    }});
+    return ratingsByUser.filter(user => user.reviews.find(review => review.imdbId == mainFilmId) != null);
+}
+
+function substractCommonRates(ratings, mainUserRatings) {
+    ratings = ratings.filter(user => user.id != mainUserRatings.id);
+    ratings.forEach(user =>  {
+        user.CommonRatingsNumber = 0;
+        user.CommonRatingsSum = 0;
+        user.reviews.forEach(userRating => {
+            let mainUserRating;
+            if((mainUserRating = mainUserRatings.reviews.find(review => userRating.imdbId == review.imdbId)) != null) {
+                userRating.rating -= mainUserRating.rating;
+                user.CommonRatingsSum += Math.abs(userRating.rating);
+                user.CommonRatingsNumber++;
+            }
+        })
+    });
+    return ratings;
+}
+
+function sortProcessedUser(ratings) {
+    return ratings.sort(
+        (user1, user2) => absQuadraticMean(user1.CommonRatingsSum, user1.CommonRatingsNumber) - absQuadraticMean(user2.CommonRatingsSum, user2.CommonRatingsNumber)
+    );
+}
+
+function getMoviesAndSeriesSet(sortedRatings, mainUserRatings) {
+    try {
+        const moviesAndSeriesGlobalSetIds = [];
+        while(sortedRatings.length > 0) {
+            const user = sortedRatings.shift();
+            moviesAndSeriesGlobalSetIds.push(user.reviews.filter(review => 
+                review.rating >= POSITIVE_RATE_MIN // Que esta puntuada positivamente
+                && !mainUserRatings.reviews.find(reviewMainUser => reviewMainUser.imdbId == review.imdbId) // Que no ha visto ya el usuario
+            ).sort((review1, review2) => review2.rating - review1.rating));
+        }
+        return moviesAndSeriesGlobalSetIds.flat();
+    } catch(err) {
+        if (err) {
+            console.log("error: " + err);
+        }
+        return [];
+    }
+    
+}
+
+async function checkMovies(moviesGlobalSetIds, mainFilmId, number) {
+    const moviesFilteredSet = [];
+    try {
+        const mainMovieData = (await peliculasTMDBResource.getTmdbRessourceFromImdb(mainFilmId)).movie_results[0];
+        while(moviesFilteredSet.length < number && moviesGlobalSetIds.length > 0) {
+            const movie = moviesGlobalSetIds.shift();
+            try {
+                // Verifica que ya no esta añadido
+                if(!moviesFilteredSet.find(movieSet => movie.imdbId == movieSet.imdbId)) {
+                    const movieData =  (await peliculasTMDBResource.getTmdbRessourceFromImdb(movie.imdbId)).movie_results[0];
+                    if(movieData !== null
+                        && movieData.genre_ids.find(genre1 => mainMovieData.genre_ids.find(genre2 => genre1 === genre2)) // Tienen una categoria en comun
+                        && !(await estaEnListaNegraPelis(movieData))) {
+                        movieData.imdbId = movie.imdbId;
+                        moviesFilteredSet.push(movieData);
+                    }
+                }
+            } catch(err) {}
+        }
+        if(moviesFilteredSet.length < number) {
+            let page = 1;
+            let similarMovies = {};
+            do {
+                similarMovies = await peliculasTMDBResource.getSimilaresPeliculas(mainMovieData.id, page);
+                similarMoviesSet = similarMovies.results.slice(0); // se hace una copia profunda
+                while(moviesFilteredSet.length < number && similarMoviesSet.length > 0) {
+                    const movieData = similarMoviesSet.shift();
+                    if(!moviesFilteredSet.find(movieSet => movieData.id == movieSet.id) && !(await estaEnListaNegraPelis(movieData))) {
+                        moviesFilteredSet.push(movieData);
+                    }
+                }
+                page++;
+            } while(moviesFilteredSet.length < number && page < similarMovies.total_pages)
+        }
+    } catch (err) {
+        if (err) {
+            console.log("error: " + err);
+        }
+    }
+    return moviesFilteredSet;
+}
+
+async function checkSeries(seriesGlobalSetIds, mainSerieId, number) {
+    const seriesFilteredSet = [];
+    try {
+        const mainSerieData = (await peliculasTMDBResource.getTmdbRessourceFromImdb(mainSerieId)).tv_results[0];
+        while(seriesFilteredSet.length < number && seriesGlobalSetIds.length > 0) {
+            const serie = seriesGlobalSetIds.shift();
+            try {
+                // Verifica que ya no esta añadido
+                if(!seriesFilteredSet.find(serieSet => serie.imdbId == serieSet.imdbId)) {
+                    const serieData = (await peliculasTMDBResource.getTmdbRessourceFromImdb(serie.imdbId)).tv_results[0];
+                    if(serieData !== null
+                        && serieData.genre_ids.find(genre1 => mainSerieData.genre_ids.find(genre2 => genre1 === genre2))  // Tienen una categoria en comun
+                        && !(await estaEnListaNegraSeries(serieData))) {
+                        serieData.imdbId = serie.imdbId;
+                        seriesFilteredSet.push(serieData);
+                    }
+                }
+            } catch(err) {}
+        }
+        if(seriesFilteredSet.length < number) {
+            let page = 1;
+            let similarSeries = {};
+            do {
+                similarSeries = await peliculasTMDBResource.getSimilaresSeries(mainSerieData.id, page);
+                similarSeriesSet = similarSeries.results.slice(0); // se hace una copia profunda
+                while(seriesFilteredSet.length < number && similarSeriesSet.length > 0) {
+                    const serieData = similarSeriesSet.shift();
+                    if(!seriesFilteredSet.find(serieSet => serieData.id == serieSet.id) && !(await estaEnListaNegraSeries(serieData))) {
+                        seriesFilteredSet.push(serieData);
+                    }
+                }
+                page++;
+            } while(seriesFilteredSet.length < number && page < similarSeries.total_pages)
+        }
+    } catch (err) {
+        if (err) {
+            console.log("error: " + err);
+        }
+    }
+    return seriesFilteredSet;
+}
+
+async function estaEnListaNegraPelis(ressource) {
+    if(mongoose.connection.readyState != 1) return false;
+    try {
+        return !(await ListaNegraPelis.findOne({ 'idTmdb' : ressource.id }));
+    } catch (err) {
+        if (err) {
+            console.log("error: " + err);
+        }
+        return false;
+    }
+}
+
+async function estaEnListaNegraSeries(ressource) {
+    if(mongoose.connection.readyState != 1) return false;
+    try {
+        return (await ListaNegraSeries.findOne({ 'idTmdb' : ressource.id })) != null;
+    } catch (err) {
+        if (err) {
+            console.log("error: " + err);
+        }
+        return false;
+    }
+}
+
 
 // devuelve una lista de hasta NUMBER películas (5 por defecto), de similar categorías que otros usuarios han puntuado 
 // sobre una película puntuada. La eleccion de estas peliculas se hace frente a las similaritudes 
 // de notacion del usuario con las notas de los otos usuarios.
-router.get("/porSimilitudes​/pelicula​/:filmId/:number?",(req, res) => {
-
+router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
     console.log("");
     console.log("-------------");
     console.log(Date() + " - GET por similitudes peliculas")
     console.log("-------------");
     console.log("");
-
-    res.send("<html><body><h1>Similitudes with film Id and user Id with " + (req.params.number || 5) + " peliculas...</h1></body></html>");
+    const userId ="agusnez" //TODO
+    var number = req.params.number || 5;
+    const ratings = await getAndFormatRatings(req.params.filmId);
+    if(ratings != undefined && ratings.length > 0) {
+        const mainUserRatings = ratings.find(user => user.id == userId)
+        const ratingsProcessed = substractCommonRates(ratings, mainUserRatings);
+        const sortedRatings = sortProcessedUser(ratingsProcessed);
+        const moviesGlobalSetIds = getMoviesAndSeriesSet(sortedRatings, mainUserRatings);
+        const moviesFilteredSet = await checkMovies(moviesGlobalSetIds, req.params.filmId, number);
+        res.json({ results : moviesFilteredSet });
+    } else {
+        res.status(412);
+        res.send([])
+    }
 });
 
 // devuelve una lista de hasta NUMBER series  (5 por defecto), de similar categorías que otros usuarios han 
 // puntuado sobre una película puntuada. La eleccion de estas peliculas, o series, se hace frente a 
 // las similaritudes de notacion del usuario con las notas de los otos usuarios.
-router.get("/porSimilitudes/serie/:serieId/:number?",(req, res) => {
-
+router.get("/porSimilitudes/serie/:serieId/:number?", async (req, res) => {
     console.log("");
     console.log("-------------");
     console.log(Date() + " - GET por simmilitudes series")
     console.log("-------------");
     console.log("");
-
-    res.send("<html><body><h1>Similitudes with serie Id and user Id with max " + (req.params.number || 5) + " series ...</h1></body></html>");
+    const userId ="agusnez" //TODO
+    var number = req.params.number || 5;
+    const ratings =  await getAndFormatRatings(req.params.serieId);
+    if(ratings != undefined && ratings.length > 0) {
+        const mainUserRatings = ratings.find(user => user.id == userId)
+        const ratingsProcessed = substractCommonRates(ratings, mainUserRatings);
+        const sortedRatings = sortProcessedUser(ratingsProcessed);
+        const seriesGlobalSetIds = getMoviesAndSeriesSet(sortedRatings, mainUserRatings);
+        const seriesFilteredSet = await checkSeries(seriesGlobalSetIds, req.params.serieId, number);
+        res.json({ results : seriesFilteredSet });
+    } else {
+        res.status(412);
+        res.send([])
+    }
 });
 
 // --------------------------
@@ -220,12 +411,12 @@ router.get("/porSimilitudes/serie/:serieId/:number?",(req, res) => {
 router.get("/listaNegra/peliculas", (req, res) => {
     console.log("");
     console.log("-------------");
-    console.log(Date() + " - GET /listaNegra");
+    console.log(Date() + " - GET /listaNegra/peliculas");
     console.log("-------------");
     console.log("");
 
     // como el filtro el vacio {} devuelve todos los elementos
-    ListaNegra.find({}, (err, elementos) => {
+    ListaNegraPelis.find({}, (err, elementos) => {
         if (err) {
             console.log(Date() + " - " + err);
             res.sendStatus(500);
@@ -244,11 +435,23 @@ router.get("/listaNegra/series", (req, res) => {
 
     console.log("");
     console.log("-------------");
-    console.log(Date() + " - GET /listaNegra");
+    console.log(Date() + " - GET /listaNegra/series");
     console.log("-------------");
     console.log("");
 
-    res.send("<html><body><h1>Lista negra</h1></body></html>")
+    // como el filtro el vacio {} devuelve todos los elementos
+    ListaNegraSeries.find({}, (err, elementos) => {
+        if (err) {
+            console.log(Date() + " - " + err);
+            res.sendStatus(500);
+        } else {
+
+            // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
+            res.send(elementos.map((elemento) => {
+                return elemento.cleanup();
+            }));
+        }
+    });
 });
 
 //Añade la pelicula a la lista de peliculas que no se debe recomandar al usuario
@@ -269,11 +472,11 @@ router.post("/listaNegra/pelicula/:peliculaId", async (req, res) => {
     
     try {
         // compruebo si esta en la lista negra
-        const storedDataArray = await ListaNegra.findOne({ 'idTmdb' : peliculaId });
+        const storedDataArray = await ListaNegraPelis.findOne({ 'idTmdb' : peliculaId });
         console.log("esta en lista negra: " + storedDataArray);
         if (!storedDataArray){
             // si no esta en la lista negra lo añado
-            ListaNegra.create(pelicula, (error, record) => {
+            ListaNegraPelis.create(pelicula, (error, record) => {
                 if (error) {
                     console.log(Date() + " - " + err);
                     res.sendStatus(500);
@@ -293,11 +496,11 @@ router.post("/listaNegra/pelicula/:peliculaId", async (req, res) => {
             console.log("error: " + err);
             throw new Error(err.message);
         }
-    }   
+    }
 });
 
 //Añade la serie a la lista de series que no se debe recomandar al usuario
-router.post("/listaNegra/serie/:serieId", (req, res) => {
+router.post("/listaNegra/serie/:serieId", async (req, res) => {
     
     console.log("");
     console.log("-------------");
@@ -305,7 +508,39 @@ router.post("/listaNegra/serie/:serieId", (req, res) => {
     console.log("-------------");
     console.log("");
 
-    res.send("<html><body><h1>Lista negra</h1></body></html>")
+    var serieId = req.params.serieId; //para que funcione esto tienes que añadir body-parser
+    console.log(" - req.body => serie: " + serieId);
+
+    // creo el objeto schema de lista negra
+    const serie = { "idTmdb" : serieId }
+    
+    try {
+        // compruebo si esta en la lista negra
+        const storedDataArray = await ListaNegraSeries.findOne({ 'idTmdb' : serieId });
+        console.log("esta en lista negra: " + storedDataArray);
+        if (!storedDataArray){
+            // si no esta en la lista negra lo añado
+            ListaNegraSeries.create(serie, (error, record) => {
+                if (error) {
+                    console.log(Date() + " - " + err);
+                    res.sendStatus(500);
+                } else {
+                    console.log("serie añadida a la lista negra: ", record._id, serie.idTmdb);
+                    res.sendStatus(201);
+                }
+            }); 
+        } else{
+            console.log("ya existe serie en la lista negra: " + serieId);
+            res.json({ message: 'Serie ya existente en la lista negra!', serieId});
+        }
+        
+    }
+    catch (err) {
+        if (err) {
+            console.log("error: " + err);
+            throw new Error(err.message);
+        }
+    }
 });
 
 //Retira la pelicula de la lista de peliculas que no se debe recomandar al usuario
@@ -321,7 +556,7 @@ router.delete("/listaNegra/pelicula/:peliculaId", (req, res) => {
     console.log(" - req.body => pelicula: " + peliculaId);
     
     // es necesario el id de la pelicula creado por mongoose
-    ListaNegra.deleteOne({ 'idTmdb' : peliculaId})
+    ListaNegraPelis.deleteOne({ 'idTmdb' : peliculaId})
         .then((response) => {
             res.json({ message: 'Pelicula Deleted!', peliculaId});
         })
@@ -343,11 +578,23 @@ router.delete("/listaNegra/pelicula/:peliculaId", (req, res) => {
 
 //Retira la serie de la lista de series que no se debe recomandar al usuario
 router.delete("/listaNegra/serie/:serieId", (req, res) => {
-    res.send("<html><body><h1>Lista negra</h1></body></html>")
+    var serieId = req.params.serieId; //para que funcione esto tienes que añadir body-parser
+    console.log(" - req.body => serie: " + serieId);
+    
+    // es necesario el id de la pelicula creado por mongoose
+    ListaNegraSeries.deleteOne({ 'idTmdb' : serieId})
+        .then((response) => {
+            res.json({ message: 'Serie Deleted!', serieId});
+        })
+        .catch((err) =>{
+            console.log(Date() + " - " + err);
+            res.sendStatus(500);
+        })
+        ;
 });
 
 // --------------------------
 // LISTA NEGRA
 // --------------------------
 
-module.exports = router;
+module.exports = { router, getAndFormatRatings, substractCommonRates, sortProcessedUser, getMoviesAndSeriesSet, checkMovies, checkSeries };
