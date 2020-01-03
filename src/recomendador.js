@@ -447,6 +447,8 @@ router.get("/listaNegra/peliculas", (req, res) => {
     console.log("-------------");
     console.log("");
 
+    let listaNegraPelis = [];
+
     // como el filtro el vacio {} devuelve todos los elementos
     ListaNegraPelis.find({}, (err, elementos) => {
         if (err) {
@@ -455,9 +457,13 @@ router.get("/listaNegra/peliculas", (req, res) => {
         } else {
 
             // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
-            res.send(elementos.map((elemento) => {
-                return elemento.cleanup();
-            }));
+            elementos.map((elemento) => {
+                elemento = elemento.cleanup();
+                listaNegraPelis.push(elemento);
+            });
+
+            console.log("Lista negra numero peliculas: " + listaNegraPelis.length);
+            res.json({results : listaNegraPelis});
         }
     });
 });
@@ -471,6 +477,8 @@ router.get("/listaNegra/series", (req, res) => {
     console.log("-------------");
     console.log("");
 
+    let listaNegraSeries = [];
+
     // como el filtro el vacio {} devuelve todos los elementos
     ListaNegraSeries.find({}, (err, elementos) => {
         if (err) {
@@ -479,9 +487,13 @@ router.get("/listaNegra/series", (req, res) => {
         } else {
 
             // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
-            res.send(elementos.map((elemento) => {
-                return elemento.cleanup();
-            }));
+            elementos.map((elemento) => {
+                elemento = elemento.cleanup();
+                listaNegraSeries.push(elemento);
+            });
+
+            console.log("Lista negra numero series: " + listaNegraSeries.length);
+            res.json({results : listaNegraSeries});
         }
     });
 });
@@ -592,6 +604,7 @@ router.delete("/listaNegra/pelicula/:peliculaId", (req, res) => {
     // es necesario el id de la pelicula creado por mongoose
     ListaNegraPelis.deleteOne({ 'idTmdb' : peliculaId})
         .then((response) => {
+            console.log("Pelicula Deleted!: " + seriesId);
             res.json({ message: 'Pelicula Deleted!', peliculaId});
         })
         .catch((err) =>{
@@ -612,12 +625,19 @@ router.delete("/listaNegra/pelicula/:peliculaId", (req, res) => {
 
 //Retira la serie de la lista de series que no se debe recomandar al usuario
 router.delete("/listaNegra/serie/:serieId", (req, res) => {
+    console.log("");
+    console.log("-------------");
+    console.log(Date() + " - DELETE /peliculaId lista negra");
+    console.log("-------------");
+    console.log("");
+
     var serieId = req.params.serieId; //para que funcione esto tienes que añadir body-parser
     console.log(" - req.body => serie: " + serieId);
     
     // es necesario el id de la pelicula creado por mongoose
     ListaNegraSeries.deleteOne({ 'idTmdb' : serieId})
         .then((response) => {
+            console.log("Serie Deleted!: " + seriesId);
             res.json({ message: 'Serie Deleted!', serieId});
         })
         .catch((err) =>{
