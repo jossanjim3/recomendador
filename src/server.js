@@ -13,7 +13,7 @@
 */
 
 const express = require('express');
-const cors = require('cors');
+const enable_cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 
@@ -36,7 +36,7 @@ var corsOptions = {
   }
   
 //app.use(cors(corsOptions))
-app.use(cors());
+app.use(enable_cors());
 
 // Our own routes requirement
 var recomendador = require("./recomendador.js").router;
