@@ -201,7 +201,7 @@ describe('Recomendador', () => {
                 ratings = substractCommonRates(ratings, mainUserRatings);
                 ratings = sortProcessedUser(ratings);
                 const set = getMoviesAndSeriesSet(ratings, mainUserRatings);
-                await checkSeries(set, reviewsSet2[0].imdbId, 2).then(
+                await checkSeries(set, reviewsSet2[0].imdbId, "piegir", 2).then(
                     series => {
                         expect(series.length).to.equal(expectedOrder.length);
                         expectedOrder.forEach((id, index) => {
@@ -224,7 +224,7 @@ describe('Recomendador', () => {
                 ratings = substractCommonRates(ratings, mainUserRatings);
                 ratings = sortProcessedUser(ratings);
                 const set = getMoviesAndSeriesSet(ratings, mainUserRatings);
-                await checkMovies(set, reviewsSet3[0].imdbId, 3).then(
+                await checkMovies(set, reviewsSet3[0].imdbId, "piegir", 3).then(
                     movies => {
                         expect(movies.length).to.equal(expectedOrder.length);
                         expectedOrder.forEach((id, index) => {

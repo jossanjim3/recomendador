@@ -2,17 +2,6 @@
 const app = require('../src/server.js');
 const request = require('supertest');
 
-describe ("Stupid test", () => {
-    
-    it("Should do an stupid test", () => {
-        const a  = 5;
-        const b = 3;
-        const sum = a+b;
-
-        expect(sum).toBe(8);
-    });
-});
-
 describe("Server API", () => {
     
     describe("GET /", () => {
