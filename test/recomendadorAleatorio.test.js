@@ -1,37 +1,30 @@
+const expect = require('chai').expect;
+const nock = require('nock');
 
-jest.mock('../__mocks__/recomendadorAleatorioPeliculas');
+const peliculasSet1 = require("./peliculasSet1");
+const obtenerPeliculasAleatoriasTmdb = require('../src/recomendador').obtenerPeliculasAleatoriasTmdb;
 
-const app = require('../src/server.js');
-const request = require('supertest');
+function mockPeliculasSet1() {
+    nock('http://localhost:3000/recomendador/v1')
+            .get('/aleatorio/peliculas')
+            .reply(200, peliculasSet1);
+}
 
-//jest.setTimeout(30000);
+jest.setTimeout(30000);
 
 describe("Recomendador Aleatorio Test API", () => {
+
+    it('should return films with the right structure', async () => {
+        mockPeliculasSet1();
+        return obtenerPeliculasAleatoriasTmdb(1)
+          .then(response => {
+            //expect an object back
+            expect(typeof response).to.equal('object');
     
-    // parte arrange 
-    beforeAll(() => {
-        
+            expect(response[0].id).to.equal(419704);
+            expect(response[0].popularity).to.equal(588.365);
+            //expect(response[0].textContent).toEqual(expect.stringContaining("Star Wars"));
+          });
     });
 
-    it("Should do an stupid test", () => {
-        const a  = 5;
-        const b = 3;
-        const sum = a+b;
-
-        expect(sum).toBe(8);
-    });
-
-    /* it ('GET should return a status of 200 OK', async () => {
-         const response = await request(app).get("/recomendador/aleatorio/peliculas");
-        expect(response.statusCode).toBe(200); 
-
-    });  */
-
-    /* it ("Should return all contacts", async () => {
-        const result =  await request(app).get("/recomendador/aleatorio/peliculas");
-
-        expect(result).toEqual(expect.any(Array));
-        //expect(response.body).toBeArrayOfSize(2);
-    }); */
-    
 });

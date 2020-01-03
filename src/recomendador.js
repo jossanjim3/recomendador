@@ -82,6 +82,7 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 });
 
 async function obtenerPeliculasAleatoriasTmdb(page){
+    //if(mongoose.connection.readyState != 1) return false;
 
     // devuelve la lista de peliculas aleatoria con buena puntuacion de la api de tmdb
     const peliculasTmdb = await peliculasTMDBResource.getAllPopularPeliculasAleatorias(page);
@@ -96,16 +97,22 @@ async function obtenerPeliculasAleatoriasTmdb(page){
         
         try {
             // compruebo si esta en la lista negra
-            const storedDataArray = await ListaNegraPelis.findOne({ 'idTmdb' : pelicula.id });
-            console.log("esta en lista negra: " + storedDataArray);
-            if (!storedDataArray){
-                // si no esta en la lista negra lo añado al array a devolver
+            if(mongoose.connection.readyState != 1) {
                 peliculasRet.push(pelicula);
                 console.log("añado pelicula: " + pelicula.id);
-            } else{
-                console.log("no añado pelicula: " + pelicula.id);
-            }
 
+            } else {
+                const storedDataArray = await ListaNegraPelis.findOne({ 'idTmdb' : pelicula.id, 'idUsuario': userId });
+                console.log("esta en lista negra: " + storedDataArray);
+                if (!storedDataArray){
+                    // si no esta en la lista negra lo añado al array a devolver
+                    peliculasRet.push(pelicula);
+                    console.log("añado pelicula: " + pelicula.id);
+                } else{
+                    console.log("no añado pelicula: " + pelicula.id);
+                }
+            }
+            
             console.log("-------------");
 
             // hago el break cuando lleve number peliculas
@@ -167,6 +174,7 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
 });
 
 async function obtenerSeriesAleatoriasTmdb(page){
+    if(mongoose.connection.readyState != 1) return false;
     // devuelve la lista de series aleatoria con buena puntuacion de la api de tmdb
     const seriesTmdb = await peliculasTMDBResource.getAllPopularSeriesAleatorias(page);
     //console.log("total seriesTmdb: " + seriesTmdb.results.length);
@@ -180,7 +188,7 @@ async function obtenerSeriesAleatoriasTmdb(page){
         
         try {
             // compruebo si esta en la lista negra
-            const storedDataArray = await ListaNegraSeries.findOne({ 'idTmdb' : serie.id });
+            const storedDataArray = await ListaNegraSeries.findOne({ 'idTmdb' : serie.id, 'idUsuario': userId });
             console.log("esta en lista negra: " + storedDataArray);
             if (!storedDataArray){
                 // si no esta en la lista negra lo añado al array a devolver
@@ -796,4 +804,4 @@ router.delete("/listaNegra/serie/:serieId", async (req, res) => {
 // LISTA NEGRA
 // --------------------------
 
-module.exports = { router, retrieveUserLogin, getAndFormatRatings, substractCommonRates, sortProcessedUser, getMoviesAndSeriesSet, checkMovies, checkSeries };
+module.exports = { router, retrieveUserLogin, getAndFormatRatings, substractCommonRates, sortProcessedUser, getMoviesAndSeriesSet, checkMovies, checkSeries, obtenerPeliculasAleatoriasTmdb, obtenerSeriesAleatoriasTmdb };
