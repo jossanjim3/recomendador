@@ -15,11 +15,16 @@
 const express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 
 const ListaNegraPelis = require('./listaNegra').ListaNegraPelis;
 const ListaNegraSeries = require('./listaNegra').ListaNegraSeries;
 const peliculasTMDBResource = require('./peliculasTMDBResource');
 const reviewsRessource = require('./reviewsRessource');
+const authenticateService = require('./authenticateService')
+
+const UNAUTHORIZED_MSG = "Unauthorized: No correct token provided";
+const EMPTY_RVWS_MSG = "Unpossible: No reviews for this user";
 
 // --------------------------
 // ALEATORIOS
@@ -184,6 +189,13 @@ const POSITIVE_RATE_MIN = 3;
 
 function absQuadraticMean(sum, elementsNumber) {
     return Math.abs(sum / Math.pow(elementsNumber, 2));
+}
+
+async function retrieveUserLogin(token) {
+    if(token == null || (await authenticateService.checkToken(token)).trim() != "OK")
+        throw new Error("No authorization");
+    token = token.replace('Bearer ', '');
+    return jwt.decode(token).login;
 }
 
 async function getAndFormatRatings(mainFilmId) {
@@ -358,19 +370,38 @@ router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
     console.log(Date() + " - GET por similitudes peliculas")
     console.log("-------------");
     console.log("");
-    const userId ="agusnez" //TODO
+    //const userId ="agusnez"
+    var userId;
+    try {
+        userId = await retrieveUserLogin(req.headers['authorization'])
+    } catch(err) {
+        res.status(401);
+        res.send(UNAUTHORIZED_MSG);
+        return;
+    }
     var number = req.params.number || 5;
     const ratings = await getAndFormatRatings(req.params.filmId);
     if(ratings != undefined && ratings.length > 0) {
         const mainUserRatings = ratings.find(user => user.id == userId)
+        if(mainUserRatings == null || mainUserRatings.length == 0) {
+            res.status(412);
+            res.send(EMPTY_RVWS_MSG);
+            return;
+        }
         const ratingsProcessed = substractCommonRates(ratings, mainUserRatings);
         const sortedRatings = sortProcessedUser(ratingsProcessed);
         const moviesGlobalSetIds = getMoviesAndSeriesSet(sortedRatings, mainUserRatings);
         const moviesFilteredSet = await checkMovies(moviesGlobalSetIds, req.params.filmId, number);
-        res.json({ results : moviesFilteredSet });
+        if(seriesFilteredSet == null || (seriesFilteredSet.length == 0 && number > 0)) {
+            res.status(500);
+            res.send([]);
+            return;
+        }
+        else
+            res.json({ results : moviesFilteredSet });
     } else {
         res.status(412);
-        res.send([])
+        res.send([]);
     }
 });
 
@@ -380,23 +411,45 @@ router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
 router.get("/porSimilitudes/serie/:serieId/:number?", async (req, res) => {
     console.log("");
     console.log("-------------");
-    console.log(Date() + " - GET por simmilitudes series")
+    console.log(Date() + " - GET por similitudes series")
     console.log("-------------");
     console.log("");
-    const userId ="agusnez" //TODO
+    //const userId ="agusnez"
+    let userId;
+    try {
+        userId = await retrieveUserLogin(req.headers['authorization'])
+    } catch(err) {
+        res.status(401);
+        res.send(UNAUTHORIZED_MSG);
+        return;
+    }
+    // /userId = "agusnez";
     var number = req.params.number || 5;
     const ratings =  await getAndFormatRatings(req.params.serieId);
     if(ratings != undefined && ratings.length > 0) {
         const mainUserRatings = ratings.find(user => user.id == userId)
+        if(mainUserRatings == null || mainUserRatings.length == 0) {
+            res.status(412);
+            res.send(EMPTY_RVWS_MSG);
+            return;
+        }
         const ratingsProcessed = substractCommonRates(ratings, mainUserRatings);
         const sortedRatings = sortProcessedUser(ratingsProcessed);
         const seriesGlobalSetIds = getMoviesAndSeriesSet(sortedRatings, mainUserRatings);
         const seriesFilteredSet = await checkSeries(seriesGlobalSetIds, req.params.serieId, number);
-        res.json({ results : seriesFilteredSet });
+        if(seriesFilteredSet == null || (seriesFilteredSet.length == 0 && number > 0)) {
+            res.status(500);
+            res.send([]);
+            return;
+        }
+        else
+            res.json({ results : seriesFilteredSet });
     } else {
         res.status(412);
-        res.send([])
+        res.send([]);
+        return;
     }
+    
 });
 
 // --------------------------
@@ -599,4 +652,4 @@ router.delete("/listaNegra/serie/:serieId", (req, res) => {
 // LISTA NEGRA
 // --------------------------
 
-module.exports = { router, getAndFormatRatings, substractCommonRates, sortProcessedUser, getMoviesAndSeriesSet, checkMovies, checkSeries };
+module.exports = { router, retrieveUserLogin, getAndFormatRatings, substractCommonRates, sortProcessedUser, getMoviesAndSeriesSet, checkMovies, checkSeries };

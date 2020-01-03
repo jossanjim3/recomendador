@@ -32,6 +32,7 @@ const namesToReviewsNumber = new Map([
     ["quenenj" , 2]
 ])
 
+const retrieveUserLogin = require('../src/recomendador').retrieveUserLogin
 const getAndFormatRatings = require('../src/recomendador').getAndFormatRatings;
 const substractCommonRates = require('../src/recomendador').substractCommonRates;
 const sortProcessedUser = require('../src/recomendador').sortProcessedUser;
@@ -42,6 +43,14 @@ const checkSeries = require('../src/recomendador').checkSeries;
 const API_KEY = '?api_key=18268e82edbd92497a6d18853ddf8c57';
 const LANGUAGE = "&language=es-ES";
 const EXT_SOURCE = "&external_source=imdb_id";
+const AUTHENTIFICATION_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluIiwiaWF0IjoxNTc3OTg5MzgwLCJleHAiOjE1Nzc5OTI5ODB9.8HQaMFCpyvdpd4csrvnwv5PkMkrmPu_zg5rSq119xbY";
+
+function mockCheckToken() {
+    nock('https://fis-backend-login.herokuapp.com/api/v1')
+        .persist()
+        .get('/checkToken')
+        .reply(200, "OK");
+}
 
 function mockReviewsSet1() {
     nock('http://reviews-api.herokuapp.com/v1')
@@ -91,6 +100,12 @@ function mockReviewsRessources() {
 }
 
 describe('Recomendador', () => {
+
+    it('should retrieve login from token', () => {
+        mockCheckToken();
+        return retrieveUserLogin(AUTHENTIFICATION_TOKEN)
+          .then(response => expect(response).to.equal('admin'));   
+    });
 
     it('should return ratings with the right structure', () => {
         mockReviewsSet1();
