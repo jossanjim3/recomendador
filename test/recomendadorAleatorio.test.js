@@ -13,11 +13,19 @@ describe("Recomendador Aleatorio Test API", () => {
         
     });
 
-    it ('GET should return a status of 200 OK', async () => {
-        const response = await request(app).get("/recomendador/aleatorio/peliculas");
-        expect(response.statusCode).toBe(200);
+    it("Should do an stupid test", () => {
+        const a  = 5;
+        const b = 3;
+        const sum = a+b;
 
-    }); 
+        expect(sum).toBe(8);
+    });
+
+    /* it ('GET should return a status of 200 OK', async () => {
+         const response = await request(app).get("/recomendador/aleatorio/peliculas");
+        expect(response.statusCode).toBe(200); 
+
+    });  */
 
     /* it ("Should return all contacts", async () => {
         const result =  await request(app).get("/recomendador/aleatorio/peliculas");
