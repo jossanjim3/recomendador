@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "53a4ec56-6740-4db5-b0ce-c0eba514d3f9",
-		"name": "recomendador",
+		"name": "recomendador_integration_tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [

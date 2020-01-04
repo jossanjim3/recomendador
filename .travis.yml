@@ -7,7 +7,7 @@ before_script:
   - sleep 15
 script:
   - npm start&
-  - node_modules/.bin/newman run test/recomendador.postman_collection.json
+  - node_modules/.bin/newman run test/recomendador_integration_tests.postman_collection.json
   - npm test
 deploy:
   skip_cleanup: true
