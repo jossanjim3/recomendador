@@ -37,6 +37,9 @@ let seriesRet = [];
 // ruta postman: http://localhost:3000/recomendador/aleatorio/peliculas
 router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 
+    // inicializo la variable cada vez que se llama a la api
+    peliculasRet = []; // creada como variable global
+
     console.log("");
     console.log("-------------");
     console.log(Date() + " - GET aleatorio peliculas TMDB")
@@ -56,7 +59,6 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
     var page = 1; // por defecto trae la pagina numero 1
 
     // array de peliculas que sera devuelta al usuario
-    //peliculasRet = [];  // creada como variable global
 
     var userId;
     try {
@@ -155,6 +157,9 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     console.log("-------------");
     console.log("");
 
+    // inicializo la variable cada vez que se llama a la api
+    seriesRet = []; // creada como variable global
+
     // numero de series a devolver pasado por parametro
     var number = req.query.number;
     // olvidamos el parametro number y devuelve 20 recomendaciones. En la parte front con el selector se pone 5,10,15 o 20
@@ -167,8 +172,7 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     
     var page = 1; // por defecto trae la pagina numero 1
 
-    // array de series que sera devuelta al usuario
-    //seriesRet = []; // creada como variable global
+    // array de series que sera devuelta al usuario    
 
     var userId;
     try {
