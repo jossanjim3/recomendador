@@ -24,10 +24,6 @@ const reviewsRessource = require('./reviewsRessource');
 const authenticateService = require('./authenticateService')
 
 const UNAUTHORIZED_MSG = "Unauthorized: No correct token provided";
-const EMPTY_RVWS_MSG = "Unpossible: No reviews for this user";
-
-let peliculasRet = [];
-let seriesRet = [];
 
 /**
  * @swagger
@@ -151,6 +147,17 @@ let seriesRet = [];
  *                      type: array
  *                      items:
  *                        $ref: '#/components/schemas/pelicula'
+ *        '401':
+ *           description: Unauthorized
+ *           content:
+ *             text/html:
+ *               schema:
+ *                 type: string
+ *                 format: base64
+ *                 default: 'Unauthorized: No correct token provided'
+ *      security:
+ *        - bearerAuth:
+ *          - read
  */
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) peliculas populares de TMDB
 // ruta postman: http://localhost:3000/recomendador/aleatorio/peliculas
@@ -162,14 +169,18 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
     console.log("-------------");
     console.log("");
 
+    let peliculasRet = [];
+    
     // numero de peliculas a devolver pasado por parametro
-    var number = req.query.number;
-    // olvidamos el parametro number y devuelve 20 recomendaciones. En la parte front con el selector se pone 5,10,15 o 20
-    number = 20;
-    console.log("number limit peliculas a devolver: " + number);
-
-    if (number <= 0 || number == undefined){
-        number = 5;
+    var number = req.params.number;
+    
+    var userId;
+    try {
+        userId = await retrieveUserLogin(req.headers['authorization'])
+    } catch(err) {
+        res.status(401);
+        res.send(UNAUTHORIZED_MSG);
+        return;
     }
     
     var page = 1; // por defecto trae la pagina numero 1
@@ -177,9 +188,9 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
     // array de peliculas que sera devuelta al usuario
     //peliculasRet = [];  // creada como variable global
 
-    while(peliculasRet.length < 20){
+    while(peliculasRet.length < number){
 
-        await obtenerPeliculasAleatoriasTmdb(page);
+        peliculasRet = await obtenerPeliculasAleatoriasTmdb(page, number, userId);
         page = page + 1;
 
     }
@@ -195,13 +206,15 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
         
     res.status(200); // 200 ok
     res.json({
-            results : peliculasRet
+        results : peliculasRet
     });
  
 });
 
-async function obtenerPeliculasAleatoriasTmdb(page){
+async function obtenerPeliculasAleatoriasTmdb(page, number, userId){
     //if(mongoose.connection.readyState != 1) return false;
+
+    let peliculasRet = [];
 
     // devuelve la lista de peliculas aleatoria con buena puntuacion de la api de tmdb
     const peliculasTmdb = await peliculasTMDBResource.getAllPopularPeliculasAleatorias(page);
@@ -214,40 +227,35 @@ async function obtenerPeliculasAleatoriasTmdb(page){
     for (var pelicula of peliculasTmdb.results) {
         console.log("Pelicula Id: " + pelicula.id);
         
-        try {
-            // compruebo si esta en la lista negra
-            if(mongoose.connection.readyState != 1) {
-                peliculasRet.push(pelicula);
-                console.log("añado pelicula: " + pelicula.id);
-
-            } else {
-                const storedDataArray = await ListaNegraPelis.findOne({ 'idTmdb' : pelicula.id, 'idUsuario': userId });
-                console.log("esta en lista negra: " + storedDataArray);
-                if (!storedDataArray){
-                    // si no esta en la lista negra lo añado al array a devolver
+        if(peliculasRet.length < number) {
+            try {
+                // compruebo si esta en la lista negra
+                if(mongoose.connection.readyState != 1) {
                     peliculasRet.push(pelicula);
                     console.log("añado pelicula: " + pelicula.id);
-                } else{
-                    console.log("no añado pelicula: " + pelicula.id);
+
+                } else {
+                    const storedDataArray = await ListaNegraPelis.findOne({ 'idTmdb' : pelicula.id, 'idUsuario': userId });
+                    console.log("esta en lista negra: " + storedDataArray);
+                    if (!storedDataArray){
+                        // si no esta en la lista negra lo añado al array a devolver
+                        peliculasRet.push(pelicula);
+                        console.log("añado pelicula: " + pelicula.id);
+                    } else{
+                        console.log("no añado pelicula: " + pelicula.id);
+                    }
+                }
+                
+                console.log("-------------");
+                
+            }
+            catch (err) {
+                if (err) {
+                    console.log("error: " + err);
+                    throw new Error(err.message);
                 }
             }
-            
-            console.log("-------------");
-
-            // hago el break cuando lleve number peliculas
-            // añado mas por si añade a la lista negra desde el front
-            /* if (peliculasRet.length == number){
-                console.log("devuelvo array con " + peliculasRet.length + " peliculas!");
-                break;
-            } */
-            
         }
-        catch (err) {
-            if (err) {
-                console.log("error: " + err);
-                throw new Error(err.message);
-            }
-        }                
 
     }
 
@@ -285,6 +293,17 @@ async function obtenerPeliculasAleatoriasTmdb(page){
  *                        type: array
  *                        items:
  *                          $ref: '#/components/schemas/serie'
+ *          '401':
+ *             description: Unauthorized
+ *             content:
+ *               text/html:
+ *                 schema:
+ *                   type: string
+ *                   format: base64
+ *                   default: 'Unauthorized: No correct token provided'
+ *      security:
+ *        - bearerAuth:
+ *          - read
  */
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
 // (las que tienes buena puntuacion)
@@ -295,14 +314,19 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     console.log("-------------");
     console.log("");
 
+    let seriesRet = [];
+
     // numero de series a devolver pasado por parametro
-    var number = req.query.number;
-    // olvidamos el parametro number y devuelve 20 recomendaciones. En la parte front con el selector se pone 5,10,15 o 20
-    number = 20;
+    var number = req.params.number;
     console.log("number limit a devolver: " + number);
 
-    if (number <= 0 || number == undefined){
-        number = 5;
+    var userId;
+    try {
+        userId = await retrieveUserLogin(req.headers['authorization'])
+    } catch(err) {
+        res.status(401);
+        res.send(UNAUTHORIZED_MSG);
+        return;
     }
     
     var page = 1; // por defecto trae la pagina numero 1
@@ -310,11 +334,9 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     // array de series que sera devuelta al usuario
     //seriesRet = []; // creada como variable global
 
-    while(seriesRet.length < 20){
-
-        await obtenerSeriesAleatoriasTmdb(page);
+    while(seriesRet.length < number){
+        seriesRet = await obtenerSeriesAleatoriasTmdb(page, number, userId);
         page = page + 1;
-
     }
 
     console.log("************* devuelvo array con " + seriesRet.length + " series!");
@@ -324,7 +346,9 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     res.json({results : seriesRet});
 });
 
-async function obtenerSeriesAleatoriasTmdb(page){
+async function obtenerSeriesAleatoriasTmdb(page, number, userId){
+
+    let seriesRet = [];
 
     // devuelve la lista de series aleatoria con buena puntuacion de la api de tmdb
     const seriesTmdb = await peliculasTMDBResource.getAllPopularSeriesAleatorias(page);
@@ -337,42 +361,43 @@ async function obtenerSeriesAleatoriasTmdb(page){
     for (var serie of seriesTmdb.results) {
         console.log("Serie Id: " + serie.id);
         
-        try {
-            // compruebo si esta en la lista negra
-            if(mongoose.connection.readyState != 1) {
-                seriesRet.push(serie);
-                console.log("añado serie: " + serie.id);
-
-            } else {
-                const storedDataArray = await ListaNegraSeries.findOne({ 'idTmdb' : serie.id, 'idUsuario': userId });
-                console.log("esta en lista negra: " + storedDataArray);
-                if (!storedDataArray){
-                    // si no esta en la lista negra lo añado al array a devolver
+        if(seriesRet.length < number) {
+            try {
+                // compruebo si esta en la lista negra
+                if(mongoose.connection.readyState != 1) {
                     seriesRet.push(serie);
                     console.log("añado serie: " + serie.id);
-                } else{
-                    console.log("no añado serie: " + serie.id);
+
+                } else {
+                    const storedDataArray = await ListaNegraSeries.findOne({ 'idTmdb' : serie.id, 'idUsuario': userId });
+                    console.log("esta en lista negra: " + storedDataArray);
+                    if (!storedDataArray){
+                        // si no esta en la lista negra lo añado al array a devolver
+                        seriesRet.push(serie);
+                        console.log("añado serie: " + serie.id);
+                    } else{
+                        console.log("no añado serie: " + serie.id);
+                    }
+                }
+                
+
+                console.log("-------------");
+
+                // hago el break cuando lleve number series
+                // añado mas por si añade a la lista negra desde el front
+                /* if (seriesRet.length == number){
+                    console.log("devuelvo array con " + seriesRet.length + " series!");
+                    break;
+                } */
+                
+            }
+            catch (err) {
+                if (err) {
+                    console.log("error: " + err);
+                    throw new Error(err.message);
                 }
             }
-            
-
-            console.log("-------------");
-
-            // hago el break cuando lleve number series
-            // añado mas por si añade a la lista negra desde el front
-            /* if (seriesRet.length == number){
-                console.log("devuelvo array con " + seriesRet.length + " series!");
-                break;
-            } */
-            
         }
-        catch (err) {
-            if (err) {
-                console.log("error: " + err);
-                throw new Error(err.message);
-            }
-        }                
-
     }
 
     return seriesRet;
@@ -647,7 +672,6 @@ router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
     console.log(Date() + " - GET por similitudes peliculas")
     console.log("-------------");
     console.log("");
-    //const userId ="agusnez"
     var userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
@@ -765,7 +789,6 @@ router.get("/porSimilitudes/serie/:serieId/:number?", async (req, res) => {
     console.log(Date() + " - GET por similitudes series")
     console.log("-------------");
     console.log("");
-    //const userId ="agusnez"
     let userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])

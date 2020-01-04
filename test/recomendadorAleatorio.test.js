@@ -30,11 +30,11 @@ describe("Recomendador Aleatorio Test API", () => {
 
     it('should return films with the right structure', async () => {
         mockPeliculasSet1();
-        return obtenerPeliculasAleatoriasTmdb(1)
+        return obtenerPeliculasAleatoriasTmdb(1, 1, 'admin')
           .then(response => {
             //expect an object back
             expect(typeof response).to.equal('object');
-    
+            expect(response.length).to.equal(1);
             expect(response[0].id).to.equal(181812);
             expect(response[0].popularity).to.equal(454.192);
             expect(response[0].original_title ).to.include.any.string("Star","Wars", "Skywalker");
@@ -43,11 +43,11 @@ describe("Recomendador Aleatorio Test API", () => {
 
     it('should return TV shows with the right structure', async () => {
         mockSeriesSet1();
-        return obtenerSeriesAleatoriasTmdb(1)
+        return obtenerSeriesAleatoriasTmdb(1, 1, 'admin')
           .then(response => {
             //expect an object back
             expect(typeof response).to.equal('object');
-    
+            expect(response.length).to.equal(1);
             expect(response[0].id).to.equal(57243);
             expect(response[0].popularity).to.equal(413.45);
             expect(response[0].original_name).to.include.any.string("Doctor");
