@@ -35,8 +35,8 @@ describe("Recomendador Aleatorio Test API", () => {
             expect(typeof response).to.equal('object');
     
             expect(response[0].id).to.equal(419704);
-            expect(response[0].popularity).to.equal(590.821);
-            //expect(response[0].textContent).toEqual(expect.stringContaining("Star Wars"));
+            //expect(response[0].popularity).to.equal(590.821);
+            expect(response[0].original_title ).to.include.any.string("Ad","Astra");
           });
     });
 
@@ -48,8 +48,8 @@ describe("Recomendador Aleatorio Test API", () => {
             expect(typeof response).to.equal('object');
     
             expect(response[0].id).to.equal(57243);
-            expect(response[0].popularity).to.equal(413.45);
-            //expect(response[0].textContent).toEqual(expect.stringContaining("Star Wars"));
+            //expect(response[0].popularity).to.equal(413.45);
+            expect(response[0].original_name).to.include.any.string("Doctor");
           });
     });
 
