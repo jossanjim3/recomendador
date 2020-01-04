@@ -29,6 +29,7 @@
     "mocha-prepare": "^0.1.0",
     "mongodb": "^3.4.1",
     "mongoose": "^5.8.1",
+    "newman": "^4.5.7",
     "node-cache": "^5.1.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.8",
