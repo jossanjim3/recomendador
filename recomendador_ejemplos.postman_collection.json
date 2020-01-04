@@ -1,0 +1,457 @@
+{
+	"info": {
+		"_postman_id": "9649b926-fc37-4946-9c6f-e1e1ed08676f",
+		"name": "recomendador_ejemplos",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "recomendaciones",
+			"item": [
+				{
+					"name": "porSimilitudes pelicula",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "52114a13-6997-43d1-a7b9-5b61d553a996",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/porSimilitudes/pelicula/tt0816692/12",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"porSimilitudes",
+								"pelicula",
+								"tt0816692",
+								"12"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "porSimilitudes serie",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ddbaa53b-e1a4-49a1-9151-e3d5928e55f8",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/porSimilitudes/serie/tt0903747/7",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"porSimilitudes",
+								"serie",
+								"tt0903747",
+								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "aleatorio peliculas",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9ddec6ca-9ed7-4499-8fb7-66a2d1356a07",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/aleatorio/peliculas/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"aleatorio",
+								"peliculas",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "aleatorio series",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "dab145f3-9ded-4ad6-9e83-295636d804ac",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/aleatorio/series/8",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"aleatorio",
+								"series",
+								"8"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "lista negra pelis",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "19ce5ca5-6670-4590-abc9-3cfbf6a4b040",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/listaNegra/pelicula/126889",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"listaNegra",
+						"pelicula",
+						"126889"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "lista negra series",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "4147b9e0-c4d5-451c-9fbf-fd8e709cd5b4",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/listaNegra/serie/60574",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"listaNegra",
+						"serie",
+						"60574"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "lista negra pelis",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "f5fa406b-7859-4eaa-a691-30e399852596",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "39b86ae3-9fbf-412c-b0b4-528de27db119",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/listaNegra/peliculas",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"listaNegra",
+						"peliculas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "lista negra series",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "4bd412f6-29de-4afa-b3d2-da933ac45eec",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "331b6c54-73e7-426c-9abe-a32f8ceec3d9",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/listaNegra/series",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"listaNegra",
+						"series"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "lista negra pelis",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "15b852e2-6842-4f9f-82b4-4ce72e029af2",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "831e9ec8-0043-4045-98c9-dba58bc271cd",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/listaNegra/pelicula/126889",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"listaNegra",
+						"pelicula",
+						"126889"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "lista negra series",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "3d4164d5-2608-4cf0-b708-b54f86f9c97e",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "1ec1b5d3-7cb9-45e8-b3cf-fac50524c4e8",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/listaNegra/serie/60574",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"listaNegra",
+						"serie",
+						"60574"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{currentAccessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "8e8e5f19-9e99-4321-badd-5c0822de8331",
+				"type": "text/javascript",
+				"exec": [
+					"const echoPostRequest = {",
+					"  url: 'https://fis-backend-login.herokuapp.com/api/v1/authenticate',",
+					"  method: 'POST',",
+					"  header: 'Content-Type:application/json',",
+					"  body: {",
+					"    mode: 'application/json',",
+					"    raw: JSON.stringify(",
+					"        {",
+					"        \tlogin: \"admin\",",
+					"        \tpassword: 'admin'",
+					"        })",
+					"  }",
+					"};",
+					"",
+					"var getToken = true;",
+					"",
+					"if (!pm.environment.get('accessTokenExpiry') || ",
+					"    !pm.environment.get('currentAccessToken')) {",
+					"    console.log('Token or expiry date are missing')",
+					"} else if (pm.environment.get('accessTokenExpiry') <= (new Date()).getTime()) {",
+					"    console.log('Token is expired')",
+					"} else {",
+					"    getToken = false;",
+					"    console.log('Token and expiry date are all good');",
+					"}",
+					"",
+					"if (getToken === true) {",
+					"    pm.sendRequest(echoPostRequest, function (err, res) {",
+					"    console.log(err ? err : res.json());",
+					"        if (err === null) {",
+					"            console.log('Saving the token and expiry date')",
+					"            var responseJson = res.json();",
+					"            pm.environment.set('currentAccessToken', responseJson.token)",
+					"    ",
+					"            var expiryDate = new Date();",
+					"            expiryDate.setSeconds(expiryDate.getSeconds() + 3000);",
+					"            pm.environment.set('accessTokenExpiry', expiryDate.getTime());",
+					"        }",
+					"    });",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "dba7b5e9-b53a-4aac-8a09-5d7bde604722",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "9bee468b-3393-419f-88ba-dfe559ccacfc",
+			"key": "host",
+			"value": "http://recomendador-fis1920.herokuapp.com/recomendador/v1",
+			"type": "string"
+		},
+		{
+			"id": "c10c0c43-9c74-4904-a965-ce3498f1c79e",
+			"key": "currentAccessToken ",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "35a73ba9-f11e-4b0b-8d5e-5947e663ea19",
+			"key": "accessTokenExpiry",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"protocolProfileBehavior": {}
+}
