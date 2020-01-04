@@ -20,16 +20,21 @@
   },
   "homepage": "https://github.com/jossanjim3/recomendador#readme",
   "dependencies": {
-    "cors": "^2.8.5",
     "axios": "^0.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
     "eslint-config-strongloop": "^2.1.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
+    "mocha-prepare": "^0.1.0",
     "mongodb": "^3.4.1",
     "mongoose": "^5.8.1",
+    "newman": "^4.5.7",
     "node-cache": "^5.1.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.8",
+    "swagger-jsdoc": "^3.5.0",
+    "swagger-ui-express": "^4.1.2",
     "url-join": "^4.0.1",
     "util": "^0.12.1"
   },
@@ -39,6 +44,7 @@
     "jest": "^24.9.0",
     "jest-extended": "^0.11.2",
     "mocha": "^6.2.2",
+    "mongo-unit": "^1.5.1",
     "nock": "^11.7.0",
     "supertest": "^4.0.2"
   }
