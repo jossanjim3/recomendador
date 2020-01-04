@@ -63,7 +63,7 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
         userId = await retrieveUserLogin(req.headers['authorization'])
         console.log("userID recuperado: " + userId);
     } catch(err) {
-        console.log("Error recuperar userID: " + err);
+        console.log("Error recuperar userID /aleatorio/peliculas/: " + err);
         res.status(401);
         res.send(UNAUTHORIZED_MSG);
         return;
@@ -159,7 +159,7 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     var number = req.query.number;
     // olvidamos el parametro number y devuelve 20 recomendaciones. En la parte front con el selector se pone 5,10,15 o 20
     number = 20;
-    console.log("number limit a devolver: " + number);
+    console.log("number limit series a devolver: " + number);
 
     if (number <= 0 || number == undefined){
         number = 5;
@@ -173,7 +173,7 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     var userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
-        console.log("userID recuperado: " + userId);
+        console.log("userID recuperado /aleatorio/series: " + userId);
     } catch(err) {
         console.log("Error recuperar userID: " + err);
         res.status(401);
@@ -570,7 +570,9 @@ router.get("/listaNegra/peliculas", async (req, res) => {
     let userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
+        console.log("userID recuperado: " + userId);
     } catch(err) {
+        console.log("Error recuperar userID /listaNegra/peliculas: " + err);
         res.status(401);
         res.send(UNAUTHORIZED_MSG);
         return;
@@ -584,6 +586,7 @@ router.get("/listaNegra/peliculas", async (req, res) => {
             res.sendStatus(500);
         } else {
 
+            /* esto no funciona, no recupera el los datos de la pelicula, el id de tmdb no sirve, debe ser el id imdb */
             /* for (var elemento of elementos) {
                 console.log("Elemento id a recuperar from tmdb: " + elemento.idTmdb);
                 const movieData =  getResourceFromTmdb(elemento.idTmdb);
@@ -618,7 +621,9 @@ router.get("/listaNegra/series", async (req, res) => {
     let userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
+        console.log("userID recuperado: " + userId);
     } catch(err) {
+        console.log("Error recuperar userID /listaNegra/series: " + err);
         res.status(401);
         res.send(UNAUTHORIZED_MSG);
         return;
@@ -631,7 +636,9 @@ router.get("/listaNegra/series", async (req, res) => {
         if (err) {
             console.log(Date() + " - " + err);
             res.sendStatus(500);
+            
         } else {
+
             // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
             elementos.map((elemento) => {
                 elemento = elemento.cleanup();
@@ -662,7 +669,9 @@ router.post("/listaNegra/pelicula/:peliculaId", async (req, res) => {
     let userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
+        console.log("userID recuperado: " + userId);
     } catch(err) {
+        console.log("Error recuperar userID: " + err);
         res.status(401);
         res.send(UNAUTHORIZED_MSG);
         return;
@@ -715,7 +724,9 @@ router.post("/listaNegra/serie/:serieId", async (req, res) => {
     let userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
+        console.log("userID recuperado: " + userId);
     } catch(err) {
+        console.log("Error recuperar userID: " + err);
         res.status(401);
         res.send(UNAUTHORIZED_MSG);
         return;
