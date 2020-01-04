@@ -58,9 +58,20 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
     // array de peliculas que sera devuelta al usuario
     //peliculasRet = [];  // creada como variable global
 
+    var userId;
+    try {
+        userId = await retrieveUserLogin(req.headers['authorization'])
+        console.log("userID recuperado: " + userId);
+    } catch(err) {
+        console.log("Error recuperar userID: " + err);
+        res.status(401);
+        res.send(UNAUTHORIZED_MSG);
+        return;
+    }
+
     while(peliculasRet.length < 20){
 
-        await obtenerPeliculasAleatoriasTmdb(page);
+        await obtenerPeliculasAleatoriasTmdb(page, userId);
         page = page + 1;
 
     }
@@ -81,7 +92,7 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
  
 });
 
-async function obtenerPeliculasAleatoriasTmdb(page){
+async function obtenerPeliculasAleatoriasTmdb(page,userId){
     //if(mongoose.connection.readyState != 1) return false;
 
     // devuelve la lista de peliculas aleatoria con buena puntuacion de la api de tmdb
@@ -159,9 +170,20 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     // array de series que sera devuelta al usuario
     //seriesRet = []; // creada como variable global
 
+    var userId;
+    try {
+        userId = await retrieveUserLogin(req.headers['authorization'])
+        console.log("userID recuperado: " + userId);
+    } catch(err) {
+        console.log("Error recuperar userID: " + err);
+        res.status(401);
+        res.send(UNAUTHORIZED_MSG);
+        return;
+    }
+
     while(seriesRet.length < 20){
 
-        await obtenerSeriesAleatoriasTmdb(page);
+        await obtenerSeriesAleatoriasTmdb(page, userId);
         page = page + 1;
 
     }
@@ -173,7 +195,7 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     res.json({results : seriesRet});
 });
 
-async function obtenerSeriesAleatoriasTmdb(page){
+async function obtenerSeriesAleatoriasTmdb(page,userId){
 
     // devuelve la lista de series aleatoria con buena puntuacion de la api de tmdb
     const seriesTmdb = await peliculasTMDBResource.getAllPopularSeriesAleatorias(page);
