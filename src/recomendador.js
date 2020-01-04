@@ -174,7 +174,7 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
 });
 
 async function obtenerSeriesAleatoriasTmdb(page){
-    if(mongoose.connection.readyState != 1) return false;
+
     // devuelve la lista de series aleatoria con buena puntuacion de la api de tmdb
     const seriesTmdb = await peliculasTMDBResource.getAllPopularSeriesAleatorias(page);
     //console.log("total seriesTmdb: " + seriesTmdb.results.length);
@@ -188,15 +188,22 @@ async function obtenerSeriesAleatoriasTmdb(page){
         
         try {
             // compruebo si esta en la lista negra
-            const storedDataArray = await ListaNegraSeries.findOne({ 'idTmdb' : serie.id, 'idUsuario': userId });
-            console.log("esta en lista negra: " + storedDataArray);
-            if (!storedDataArray){
-                // si no esta en la lista negra lo añado al array a devolver
+            if(mongoose.connection.readyState != 1) {
                 seriesRet.push(serie);
                 console.log("añado serie: " + serie.id);
-            } else{
-                console.log("no añado serie: " + serie.id);
+
+            } else {
+                const storedDataArray = await ListaNegraSeries.findOne({ 'idTmdb' : serie.id, 'idUsuario': userId });
+                console.log("esta en lista negra: " + storedDataArray);
+                if (!storedDataArray){
+                    // si no esta en la lista negra lo añado al array a devolver
+                    seriesRet.push(serie);
+                    console.log("añado serie: " + serie.id);
+                } else{
+                    console.log("no añado serie: " + serie.id);
+                }
             }
+            
 
             console.log("-------------");
 
