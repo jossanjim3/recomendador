@@ -29,10 +29,129 @@ const EMPTY_RVWS_MSG = "Unpossible: No reviews for this user";
 let peliculasRet = [];
 let seriesRet = [];
 
+/**
+ * @swagger
+ *  components:
+ *    schemas:
+ *      pelicula:
+ *        allOf:
+ *        - type: object
+ *          properties:
+ *            original_title:
+ *              type: string
+ *            id:
+ *              type: integer
+ *            video:
+ *              type: boolean
+ *            title:
+ *              type: string
+ *            vote_count:
+ *              type: integer
+ *            vote_average:
+ *              type: number
+ *            release_date:
+ *              type: string
+ *            poster_path:
+ *              type: string
+ *            genre_ids:
+ *              type: array
+ *              items:
+ *                type: integer
+ *            original_language:
+ *              type: string
+ *            backdrop_path:
+ *              type: string
+ *            adult:
+ *              type: boolean
+ *            overview:
+ *              type: string
+ *            origin_country:
+ *              type: array
+ *              items:
+ *                type: string
+ *            popularity:
+ *                type: number
+ *      serie:
+ *        allOf:
+ *        - type: object
+ *          properties:
+ *            original_name:
+ *              type: string
+ *            id:
+ *              type: integer
+ *            name:
+ *              type: string
+ *            vote_count:
+ *              type: integer
+ *            vote_average:
+ *              type: number
+ *            first_air_date:
+ *              type: string
+ *            poster_path:
+ *              type: string
+ *            genre_ids:
+ *              type: array
+ *              items:
+ *                type: integer
+ *            original_language:
+ *              type: string
+ *            backdrop_path:
+ *              type: string
+ *            overview:
+ *              type: string
+ *            origin_country:
+ *              type: array
+ *              items:
+ *                type: string
+ *            popularity:
+ *                type: number
+ *      listaNegra:
+ *        allOf:
+ *        - type: object
+ *          properties:
+ *            idTmdb:
+ *              type: integer
+ *            idUsuario:
+ *              type: string
+ */
+
 // --------------------------
 // ALEATORIOS
 // --------------------------
 
+/**
+ * @swagger
+ * path:
+ *  '/aleatorio/peliculas/{number}':
+ *    get:
+ *      tags:
+ *        - aleatorio
+ *      description: >-
+ *        Recomendador que devuelva aleatoriamente una lista de <number> peliculas (las que tienen buena puntuacion)
+ *      operationId: getAleatorioPeliculas
+ *      parameters:
+ *        - name: number
+ *          in: path
+ *          description: 'nombre de peliculas que recomendar (optional, 5 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
+ *          required: true
+ *          schema:
+ *            minimum: 1
+ *            type: integer
+ *            format: int64
+ *      responses:
+ *        '200':
+ *          description: OK
+ *          content:
+ *            application/json:
+ *              schema:
+ *                allOf:
+ *                - type: object
+ *                  properties:
+ *                    results:
+ *                      type: array
+ *                      items:
+ *                        $ref: '#/components/schemas/pelicula'
+ */
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) peliculas populares de TMDB
 // ruta postman: http://localhost:3000/recomendador/aleatorio/peliculas
 router.get("/aleatorio/peliculas/:number?", async (req, res) => {
@@ -128,6 +247,38 @@ async function obtenerPeliculasAleatoriasTmdb(page){
     return peliculasRet;
 }
 
+/**
+ * @swagger
+ * path:
+ *   '/aleatorio/series/{number}':
+ *      get:
+ *        tags:
+ *          - aleatorio
+ *        description: >-
+ *          Recomendador que devuelva aleatoriamente una lista de <number> series (las que tienen buena puntuacion)
+ *        operationId: getAleatorioSeries
+ *        parameters:
+ *          - name: number
+ *            in: path
+ *            description: 'nombre de series que recomendar (optional, 5 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
+ *            required: true
+ *            schema:
+ *              type: integer
+ *              format: int64
+ *        responses:
+ *          '200':
+ *            description: OK
+ *            content:
+ *              application/json:
+ *                schema:
+ *                  allOf:
+ *                  - type: object
+ *                    properties:
+ *                      results:
+ *                        type: array
+ *                        items:
+ *                          $ref: '#/components/schemas/serie'
+ */
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
 // (las que tienes buena puntuacion)
 router.get("/aleatorio/series/:number?", async (req, res) => {
@@ -401,7 +552,77 @@ async function estaEnListaNegraSeries(ressource, userId) {
     }
 }
 
-
+/**
+ * @swagger
+ * path:
+ *  '/porSimilitudes/pelicula/{filmId}/{number}':
+ *     get:
+ *       tags:
+ *         - similitudes
+ *       description: >-
+ *         Recomendador que devuelve una lista de hasta <number> películas de similares
+ *         categorías que otros usuarios han puntuado sobre la película puntuada.
+ *         La eleccion de estas peliculas se hace comparando las puntuaciones del
+ *         usuario autentificado con las de los otos usuarios.
+ *       operationId: getPeliculasPorSimilitudes
+ *       parameters:
+ *         - name: filmId
+ *           in: path
+ *           description: id de la pelicula puntuada
+ *           required: true
+ *           schema:
+ *             type: string
+ *         - name: number
+ *           in: path
+ *           description: 'nombre de peliculas que recomendar (optional, 5 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
+ *           required: true
+ *           schema:
+ *             minimum: 1
+ *             type: integer
+ *             format: int64
+ *       responses:
+ *         '200':
+ *           description: OK
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 allOf:
+ *                 - type: object
+ *                   properties:
+ *                     results:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/pelicula'
+ *         '401':
+ *           description: Unauthorized
+ *           content:
+ *             text/html:
+ *               schema:
+ *                 type: string
+ *                 format: base64
+ *                 default: 'Unauthorized: No correct token provided'
+ *         '412':
+ *           description: 'Precondition Failed (El id de la pelicula es incorrecta)'
+ *           content: {}
+ *         '417':
+ *           description: 'Expectation Failed (El usuario no ha puntado la pelicula. Devuelve unicamente peliculas similares segun tmdb sin tener cuenta del usuario y sin hacer ningun proceso particular)'
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 allOf:
+ *                 - type: object
+ *                   properties:
+ *                     results:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/pelicula'
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *             - read
+ */
 // devuelve una lista de hasta NUMBER películas (5 por defecto), de similar categorías que otros usuarios han puntuado 
 // sobre una película puntuada. La eleccion de estas peliculas se hace frente a las similaritudes 
 // de notacion del usuario con las notas de los otos usuarios.
@@ -449,6 +670,77 @@ router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * path:
+ *  '/porSimilitudes/serie/{serieId}/{number}':
+ *     get:
+ *       tags:
+ *         - similitudes
+ *       description: >-
+ *         Recomendador que devuelve una lista de hasta <number> series de similares categorías
+ *         que otros usuarios han puntuado sobre la película puntuada. La eleccion
+ *         de estas series se hace comparando las puntuaciones del usuario
+ *         autentificado con las de los otos usuarios.
+ *       operationId: getSeriesPorSimilitudes
+ *       parameters:
+ *         - name: serieId
+ *           in: path
+ *           description: id de la serie puntuada
+ *           required: true
+ *           schema:
+ *             type: string
+ *         - name: number
+ *           in: path
+ *           description: 'nombre de series que recomendar (optional, 5 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
+ *           required: true
+ *           schema:
+ *             minimum: 1
+ *             type: integer
+ *             format: int64
+ *       responses:
+ *         '200':
+ *           description: OK
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 allOf:
+ *                 - type: object
+ *                   properties:
+ *                     results:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/serie'
+ *         '401':
+ *           description: Unauthorized
+ *           content:
+ *             text/html:
+ *               schema:
+ *                 type: string
+ *                 format: base64
+ *                 default: 'Unauthorized: No correct token provided'
+ *         '412':
+ *           description: 'Precondition Failed (El id de la serie es incorrecta)'
+ *           content: {}
+ *         '417':
+ *           description: 'Expectation Failed (El usuario no ha puntado la serie. Devuelve unicamente series similares segun tmdb sin tener cuenta del usuario y sin hacer ningun proceso particular)'
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 allOf:
+ *                 - type: object
+ *                   properties:
+ *                     results:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/serie'
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *             - read
+ */
 // devuelve una lista de hasta NUMBER series  (5 por defecto), de similar categorías que otros usuarios han 
 // puntuado sobre una película puntuada. La eleccion de estas peliculas, o series, se hace frente a 
 // las similaritudes de notacion del usuario con las notas de los otos usuarios.
@@ -522,6 +814,34 @@ async function getResourceFromTmdb(idTmdb){
     return null;
 }
 
+/**
+ * @swagger
+ * path:
+ *  '/listaNegra/peliculas':
+ *     get:
+ *       tags:
+ *         - listaNegra
+ *       description: Recupera la lista de peliculas que no se deben recomendar al usuario autentificado.
+ *       operationId: getListaNegraPeliculas
+ *       responses:
+ *         '200':
+ *           description: OK
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/listaNegra'
+ *         '401':
+ *           description: Unauthorized
+ *           content: {}
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *             - read
+ */
 //Devuelve la lista de peliculas que no se debe recomandar al usuario
 router.get("/listaNegra/peliculas", async (req, res) => {
     console.log("");
@@ -569,6 +889,34 @@ router.get("/listaNegra/peliculas", async (req, res) => {
     });
 });
 
+/**
+ * @swagger
+ * path:
+ *  '/listaNegra/series':
+ *     get:
+ *       tags:
+ *         - listaNegra
+ *       description: Recupera la lista de series que no se deben recomendar al usuario autentificado.
+ *       operationId: getListaNegraSeries
+ *       responses:
+ *         '200':
+ *           description: OK
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/listaNegra'
+ *         '401':
+ *           description: Unauthorized
+ *           content: {}
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *             - read 
+ */
 //Devuelve la lista de series que no se debe recomandar al usuario
 router.get("/listaNegra/series", async (req, res) => {
 
@@ -608,6 +956,41 @@ router.get("/listaNegra/series", async (req, res) => {
     });
 });
 
+/**
+ * @swagger
+ * path:
+ *  '/listaNegra/pelicula/{peliculaId}':
+ *     post:
+ *       tags:
+ *         - listaNegra
+ *       description: Guarda en BB.DD. la pelicula que no se debe recomendar al usuario autentificado.
+ *       operationId: addListaNegraPelicula
+ *       parameters:
+ *         - name: peliculaId
+ *           in: path
+ *           description: id de la pelicula para no recomendar
+ *           required: true
+ *           schema:
+ *             minimum: 1
+ *             type: integer
+ *             format: int64
+ *       responses:
+ *         '200':
+ *           description: Already exist
+ *           content: {}
+ *         '201':
+ *           description: Created
+ *           content: {}
+ *         '401':
+ *           description: Unauthorized
+ *           content: {}
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *             - read
+ */
 //Añade la pelicula a la lista de peliculas que no se debe recomandar al usuario
 // ruta postman: http://localhost:3000/recomendador/listaNegra/pelicula/419704
 router.post("/listaNegra/pelicula/:peliculaId", async (req, res) => {
@@ -662,6 +1045,41 @@ router.post("/listaNegra/pelicula/:peliculaId", async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * path:
+ *  '/listaNegra/serie/{serieId}':
+ *     post:
+ *       tags:
+ *         - listaNegra
+ *       description: Guarda en BB.DD. la serie que no se debe recomendar al usuario autentificado.
+ *       operationId: addListaNegraSerie
+ *       parameters:
+ *         - name: serieId
+ *           in: path
+ *           description: id de la serie para no recomendar
+ *           required: true
+ *           schema:
+ *             minimum: 1
+ *             type: integer
+ *             format: int64
+ *       responses:
+ *         '200':
+ *           description: Already exist
+ *           content: {}
+ *         '201':
+ *           description: Created
+ *           content: {}
+ *         '401':
+ *           description: Unauthorized
+ *           content: {}
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *             - read
+ */
 //Añade la serie a la lista de series que no se debe recomandar al usuario
 router.post("/listaNegra/serie/:serieId", async (req, res) => {
     
@@ -715,6 +1133,38 @@ router.post("/listaNegra/serie/:serieId", async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * path:
+ *  '/listaNegra/pelicula/{peliculaId}':
+ *     delete:
+ *       tags:
+ *         - listaNegra
+ *       description: Elimina de la BB.DD. la pelicula que no se debe recomendar al usuario autentificado.
+ *       operationId: deleteListaNegraPelicula
+ *       parameters:
+ *         - name: peliculaId
+ *           in: path
+ *           description: id de la pelicula para no recomendar
+ *           required: true
+ *           schema:
+ *             minimum: 1
+ *             type: integer
+ *             format: int64
+ *       responses:
+ *         '200':
+ *           description: OK
+ *           content: {}
+ *         '401':
+ *           description: Unauthorized
+ *           content: {}
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *             - read
+ */
 //Retira la pelicula de la lista de peliculas que no se debe recomandar al usuario
 router.delete("/listaNegra/pelicula/:peliculaId", async (req, res) => {
 
@@ -758,6 +1208,38 @@ router.delete("/listaNegra/pelicula/:peliculaId", async (req, res) => {
     }); */
 });
 
+/**
+ * @swagger
+ * path:
+ *  '/listaNegra/serie/{serieId}':
+ *     delete:
+ *       tags:
+ *         - listaNegra
+ *       description: Elimina de la BB.DD. la serie que no se debe recomendar al usuario autentificado.
+ *       operationId: deleteListaNegraSerie
+ *       parameters:
+ *         - name: serieId
+ *           in: path
+ *           description: id de la serie para no recomendar
+ *           required: true
+ *           schema:
+ *             minimum: 1
+ *             type: integer
+ *             format: int64
+ *       responses:
+ *         '200':
+ *           description: OK
+ *           content: {}
+ *         '401':
+ *           description: Unauthorized
+ *           content: {}
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *           - read
+*/
 //Retira la serie de la lista de series que no se debe recomandar al usuario
 router.delete("/listaNegra/serie/:serieId", async (req, res) => {
 
