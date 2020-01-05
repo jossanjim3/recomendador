@@ -159,13 +159,12 @@ const UNAUTHORIZED_MSG = "Unauthorized: No correct token provided";
  *        - bearerAuth:
  *          - read
  */
-let peliculasRet;
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) peliculas populares de TMDB
 // ruta postman: http://localhost:3000/recomendador/aleatorio/peliculas
 router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 
     // inicializo la variable cada vez que se llama a la api
-    peliculasRet = []; // creada como variable global, es necesario para que siempre haya como minimo 20
+    let peliculasRet = [];
 
     console.log("");
     console.log("-------------");
@@ -177,15 +176,6 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
     var number = req.params.number;
     if (number == undefined){
         number = 20;
-    }
-    
-    var userId;
-    try {
-        userId = await retrieveUserLogin(req.headers['authorization'])
-    } catch(err) {
-        res.status(401);
-        res.send(UNAUTHORIZED_MSG);
-        return;
     }
     
     var page = 1; // por defecto trae la pagina numero 1
@@ -205,8 +195,11 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 
     while(peliculasRet.length < number){
 
-        await obtenerPeliculasAleatoriasTmdb(page, number, userId);
+        let peliculas = [];
+        peliculas = await obtenerPeliculasAleatoriasTmdb(page, number, userId);
         page = page + 1;
+
+        peliculasRet = peliculasRet.concat(peliculas);
 
     }
 
@@ -229,6 +222,7 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 
 async function obtenerPeliculasAleatoriasTmdb(page, number, userId){
     //if(mongoose.connection.readyState != 1) return false;
+    let peliculasRet = [];
 
     // devuelve la lista de peliculas aleatoria con buena puntuacion de la api de tmdb
     const peliculasTmdb = await peliculasTMDBResource.getAllPopularPeliculasAleatorias(page);
@@ -319,7 +313,6 @@ async function obtenerPeliculasAleatoriasTmdb(page, number, userId){
  *        - bearerAuth:
  *          - read
  */
-let seriesRet; 
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
 // (las que tienes buena puntuacion)
 router.get("/aleatorio/series/:number?", async (req, res) => {
@@ -329,7 +322,7 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     console.log("-------------");
     console.log("");
 
-    seriesRet = []; // creada como variable global, es necesario para que siempre haya como minimo 20
+    let seriesRet = []; // necesario para que siempre haya como minimo 20
 
     // numero de series a devolver pasado por parametro
     var number = req.params.number;
@@ -339,18 +332,7 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
         number = 20;
     }
 
-    var userId;
-    try {
-        userId = await retrieveUserLogin(req.headers['authorization'])
-    } catch(err) {
-        res.status(401);
-        res.send(UNAUTHORIZED_MSG);
-        return;
-    }
-    
     var page = 1; // por defecto trae la pagina numero 1
-
-    // array de series que sera devuelta al usuario    
 
     var userId;
     try {
@@ -365,8 +347,11 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
 
 
     while(seriesRet.length < number){
-        await obtenerSeriesAleatoriasTmdb(page, number, userId);
+        let series = [];
+        series = await obtenerSeriesAleatoriasTmdb(page, number, userId);
         page = page + 1;
+
+        seriesRet = seriesRet.concat(series);
     }
 
     console.log("************* devuelvo array con " + seriesRet.length + " series!");
@@ -378,6 +363,8 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
 
 
 async function obtenerSeriesAleatoriasTmdb(page, number, userId){
+
+    let seriesRet = [];
 
     // devuelve la lista de series aleatoria con buena puntuacion de la api de tmdb
     const seriesTmdb = await peliculasTMDBResource.getAllPopularSeriesAleatorias(page);
