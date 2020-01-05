@@ -1,0 +1,824 @@
+{
+	"info": {
+		"_postman_id": "53a4ec56-6740-4db5-b0ce-c0eba514d3f9",
+		"name": "recomendador_integration_tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "recomendaciones",
+			"item": [
+				{
+					"name": "porSimilitudes pelicula",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "52114a13-6997-43d1-a7b9-5b61d553a996",
+								"exec": [
+									"var Ajv = require('ajv'),",
+									"    ajv = new Ajv({logger: console, allErrors: true}), schema = {",
+									"    \"type\": \"object\",",
+									"    \"required\": [\"results\"],",
+									"    \"properties\": {",
+									"        \"results\": {",
+									"            \"type\": \"array\",",
+									"            \"items\": {",
+									"                \"type\": \"object\",",
+									"                \"required\": [ \"id\", \"title\", \"vote_count\", \"vote_average\", \"release_date\", \"poster_path\", \"genre_ids\", \"adult\", \"overview\", \"popularity\"],",
+									"                \"properties\": {",
+									"                    \"original_title\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"id\" : {",
+									"                        \"type\" : \"integer\"",
+									"                    }, \"video\" : {",
+									"                         \"type\" : \"boolean\"",
+									"                    }, \"title\" : {",
+									"                       \"type\" : \"string\"",
+									"                    }, \"vote_count\" : {",
+									"                        \"type\" : \"integer\"",
+									"                    }, \"vote_average\" : {",
+									"                        \"type\" : \"number\"",
+									"                    }, \"release_date\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"poster_path\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"genre_ids\" : {",
+									"                        \"type\" : \"array\",",
+									"                        \"items\" : {",
+									"                            \"type\" : \"integer\"",
+									"                        }",
+									"                    }, \"original_language\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"backdrop_path\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"adult\" : {",
+									"                        \"type\" : \"boolean\"",
+									"                    }, \"overview\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"origin_country\" : {",
+									"                        \"type\" : \"array\",",
+									"                        \"items\" : {",
+									"                            \"type\" : \"string\"",
+									"                        }",
+									"                    }, \"popularity\" : {",
+									"                        \"type\" : \"number\"",
+									"                    }",
+									"                }",
+									"            }",
+									"            ",
+									"        }",
+									"    }",
+									"    ",
+									"}",
+									"",
+									"pm.test(\"Status code is 200 or 417\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 417]) });",
+									"pm.test(\"Return 12 movies\", function () { pm.expect(pm.response.json().results).to.have.lengthOf(12)});",
+									"pm.test('Schema is valid', function() {",
+									"  pm.expect(tv4.validate(pm.response.json(), schema), JSON.stringify(ajv.errors)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/porSimilitudes/pelicula/tt0816692/12",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"porSimilitudes",
+								"pelicula",
+								"tt0816692",
+								"12"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "porSimilitudes serie",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ddbaa53b-e1a4-49a1-9151-e3d5928e55f8",
+								"exec": [
+									"var Ajv = require('ajv'),",
+									"    ajv = new Ajv({logger: console, allErrors: true}), schema = {",
+									"    \"type\": \"object\",",
+									"    \"required\": [\"results\"],",
+									"    \"properties\": {",
+									"        \"results\": {",
+									"            \"type\": \"array\",",
+									"            \"items\": {",
+									"                \"type\": \"object\",",
+									"                \"required\": [\"id\", \"vote_count\", \"vote_average\", \"first_air_date\", \"poster_path\", \"genre_ids\", \"overview\", \"popularity\"],",
+									"                \"properties\": {",
+									"                    \"original_title\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"id\" : {",
+									"                        \"type\" : \"integer\"",
+									"                    }, \"video\" : {",
+									"                         \"type\" : \"boolean\"",
+									"                    }, \"title\" : {",
+									"                       \"type\" : \"string\"",
+									"                    }, \"vote_count\" : {",
+									"                        \"type\" : \"integer\"",
+									"                    }, \"vote_average\" : {",
+									"                        \"type\" : \"number\"",
+									"                    },\"first_air_date\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"poster_path\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"genre_ids\" : {",
+									"                        \"type\" : \"array\",",
+									"                        \"items\" : {",
+									"                            \"type\" : \"integer\"",
+									"                        }",
+									"                    }, \"original_language\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"backdrop_path\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"overview\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"origin_country\" : {",
+									"                        \"type\" : \"array\",",
+									"                        \"items\" : {",
+									"                            \"type\" : \"string\"",
+									"                        }",
+									"                    }, \"popularity\" : {",
+									"                        \"type\" : \"number\"",
+									"                    }",
+									"                }",
+									"            }",
+									"            ",
+									"        }",
+									"    }",
+									"    ",
+									"}",
+									"",
+									"pm.test(\"Status code is 200 or 417\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 417]) });",
+									"pm.test(\"Return 7 series\", function () { pm.expect(pm.response.json().results).to.have.lengthOf(7)});",
+									"pm.test('Schema is valid', function() {",
+									"  pm.expect(tv4.validate(pm.response.json(), schema), JSON.stringify(ajv.errors)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/porSimilitudes/serie/tt0903747/7",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"porSimilitudes",
+								"serie",
+								"tt0903747",
+								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "aleatorio peliculas",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9ddec6ca-9ed7-4499-8fb7-66a2d1356a07",
+								"exec": [
+									"var Ajv = require('ajv'),",
+									"    ajv = new Ajv({logger: console, allErrors: true}), schema = {",
+									"    \"type\": \"object\",",
+									"    \"required\": [\"results\"],",
+									"    \"properties\": {",
+									"        \"results\": {",
+									"            \"type\": \"array\",",
+									"            \"items\": {",
+									"                \"type\": \"object\",",
+									"                \"required\": [ \"id\", \"title\", \"vote_count\", \"vote_average\", \"release_date\", \"poster_path\", \"genre_ids\", \"adult\", \"overview\", \"popularity\"],",
+									"                \"properties\": {",
+									"                    \"original_title\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"id\" : {",
+									"                        \"type\" : \"integer\"",
+									"                    }, \"video\" : {",
+									"                         \"type\" : \"boolean\"",
+									"                    }, \"title\" : {",
+									"                       \"type\" : \"string\"",
+									"                    }, \"vote_count\" : {",
+									"                        \"type\" : \"integer\"",
+									"                    }, \"vote_average\" : {",
+									"                        \"type\" : \"number\"",
+									"                    }, \"release_date\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"poster_path\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"genre_ids\" : {",
+									"                        \"type\" : \"array\",",
+									"                        \"items\" : {",
+									"                            \"type\" : \"integer\"",
+									"                        }",
+									"                    }, \"original_language\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"backdrop_path\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"adult\" : {",
+									"                        \"type\" : \"boolean\"",
+									"                    }, \"overview\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"origin_country\" : {",
+									"                        \"type\" : \"array\",",
+									"                        \"items\" : {",
+									"                            \"type\" : \"string\"",
+									"                        }",
+									"                    }, \"popularity\" : {",
+									"                        \"type\" : \"number\"",
+									"                    }",
+									"                }",
+									"            }",
+									"            ",
+									"        }",
+									"    }",
+									"    ",
+									"}",
+									"",
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200) });",
+									"pm.test('Schema is valid', function() {",
+									"  pm.expect(tv4.validate(pm.response.json(), schema), JSON.stringify(ajv.errors)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/aleatorio/peliculas/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"aleatorio",
+								"peliculas",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "aleatorio series",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "dab145f3-9ded-4ad6-9e83-295636d804ac",
+								"exec": [
+									"var Ajv = require('ajv'),",
+									"    ajv = new Ajv({logger: console, allErrors: true}), schema = {",
+									"    \"type\": \"object\",",
+									"    \"required\": [\"results\"],",
+									"    \"properties\": {",
+									"        \"results\": {",
+									"            \"type\": \"array\",",
+									"            \"items\": {",
+									"                \"type\": \"object\",",
+									"                \"required\": [\"id\", \"vote_count\", \"vote_average\", \"first_air_date\", \"poster_path\", \"genre_ids\", \"overview\", \"popularity\"],",
+									"                \"properties\": {",
+									"                    \"original_title\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"id\" : {",
+									"                        \"type\" : \"integer\"",
+									"                    }, \"video\" : {",
+									"                         \"type\" : \"boolean\"",
+									"                    }, \"title\" : {",
+									"                       \"type\" : \"string\"",
+									"                    }, \"vote_count\" : {",
+									"                        \"type\" : \"integer\"",
+									"                    }, \"vote_average\" : {",
+									"                        \"type\" : \"number\"",
+									"                    },\"first_air_date\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"poster_path\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"genre_ids\" : {",
+									"                        \"type\" : \"array\",",
+									"                        \"items\" : {",
+									"                            \"type\" : \"integer\"",
+									"                        }",
+									"                    }, \"original_language\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"backdrop_path\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"overview\" : {",
+									"                        \"type\" : \"string\"",
+									"                    }, \"origin_country\" : {",
+									"                        \"type\" : \"array\",",
+									"                        \"items\" : {",
+									"                            \"type\" : \"string\"",
+									"                        }",
+									"                    }, \"popularity\" : {",
+									"                        \"type\" : \"number\"",
+									"                    }",
+									"                }",
+									"            }",
+									"            ",
+									"        }",
+									"    }",
+									"    ",
+									"}",
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200) });",
+									"pm.test('Schema is valid', function() {",
+									"  pm.expect(tv4.validate(pm.response.json(), schema), JSON.stringify(ajv.errors)).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/aleatorio/series/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"aleatorio",
+								"series",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "lista negra pelis",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "19ce5ca5-6670-4590-abc9-3cfbf6a4b040",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () { pm.expect(pm.response.code).to.be.oneOf([201]) });",
+							"const echoGetRequest = {",
+							"  url: pm.variables.get('host') + '/listaNegra/peliculas',",
+							"  method: 'GET',",
+							"  header: 'Authorization:Bearer ' +  pm.environment.get('currentAccessToken')",
+							"};",
+							"const echoDeleteRequest = {",
+							"  url: pm.variables.get('host') + '/listaNegra/pelicula/126889',",
+							"  method: 'DELETE',",
+							"  header: 'Authorization:Bearer ' +  pm.environment.get('currentAccessToken')",
+							"};",
+							"pm.sendRequest(echoGetRequest, function (err, res) {",
+							"        pm.test(\"Insert 1 item\", function () { pm.expect(res.json().results.length).to.eql(1)});",
+							"        pm.test(\"Insert the right item\", function () { pm.expect(res.json().results[0].idTmdb).to.eql(126889) && pm.expect(res.json().results[0].idUsuario).to.eql(\"testIntegracion\")});",
+							"        pm.sendRequest(echoDeleteRequest)",
+							"    });",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/listaNegra/pelicula/126889",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"listaNegra",
+						"pelicula",
+						"126889"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "lista negra series",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "4147b9e0-c4d5-451c-9fbf-fd8e709cd5b4",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () { pm.expect(pm.response.code).to.be.oneOf([201]) });",
+							"const echoGetRequest = {",
+							"  url: pm.variables.get('host') + '/listaNegra/series',",
+							"  method: 'GET',",
+							"  header: 'Authorization:Bearer ' +  pm.environment.get('currentAccessToken')",
+							"};",
+							"const echoDeleteRequest = {",
+							"  url: pm.variables.get('host') + '/listaNegra/serie/60574',",
+							"  method: 'DELETE',",
+							"  header: 'Authorization:Bearer ' +  pm.environment.get('currentAccessToken')",
+							"};",
+							"pm.sendRequest(echoGetRequest, function (err, res) {",
+							"        pm.test(\"Insert 1 item\", function () { pm.expect(res.json().results.length).to.eql(1)});",
+							"        pm.test(\"Insert the right item\", function () { pm.expect(res.json().results[0].idTmdb).to.eql(60574) && pm.expect(res.json().results[0].idUsuario).to.eql(\"testIntegracion\")});",
+							"        pm.sendRequest(echoDeleteRequest)",
+							"    });",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/listaNegra/serie/60574",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"listaNegra",
+						"serie",
+						"60574"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "lista negra pelis",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "f5fa406b-7859-4eaa-a691-30e399852596",
+						"exec": [
+							"const echoPostRequest = {",
+							"  url: pm.variables.get('host') + '/listaNegra/pelicula/126889',",
+							"  method: 'POST',",
+							"  header: 'Authorization:Bearer ' +  pm.environment.get('currentAccessToken')",
+							"};",
+							"pm.sendRequest(echoPostRequest)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "39b86ae3-9fbf-412c-b0b4-528de27db119",
+						"exec": [
+							"var Ajv = require('ajv'),",
+							"    ajv = new Ajv({logger: console, allErrors: true}), schema = {",
+							"    \"type\": \"object\",",
+							"    \"required\": [\"results\"],",
+							"    \"properties\": {",
+							"        \"results\": {",
+							"            \"type\": \"array\",",
+							"            \"items\": {",
+							"                \"type\": \"object\",",
+							"                \"required\": [\"idTmdb\", \"idUsuario\"],",
+							"                \"properties\": {",
+							"                    \"idTmdb\" : {",
+							"                        \"type\" : \"integer\"",
+							"                    }, \"idUsuario\" : {",
+							"                         \"type\" : \"string\"",
+							"                    }, ",
+							"                }",
+							"            }",
+							"        }",
+							"    }",
+							"}",
+							"",
+							"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200) });",
+							"pm.test(\"Return 1 item\", function () { pm.expect(pm.response.json().results.length).to.eql(1)});",
+							"pm.test(\"Return the right item\", function () { pm.expect(pm.response.json().results[0].idTmdb).to.eql(126889) && pm.expect(pm.response.json().results[0].idUsuario).to.eql(\"testIntegracion\")});",
+							"pm.test('Schema is valid', function() {",
+							"  pm.expect(tv4.validate(pm.response.json(), schema), JSON.stringify(ajv.errors)).to.be.true;",
+							"});",
+							"const echoDeleteRequest = {",
+							"  url: pm.variables.get('host') + '/listaNegra/pelicula/126889',",
+							"  method: 'DELETE',",
+							"  header: 'Authorization:Bearer ' +  pm.environment.get('currentAccessToken')",
+							"};",
+							"pm.sendRequest(echoDeleteRequest)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/listaNegra/peliculas",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"listaNegra",
+						"peliculas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "lista negra series",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "4bd412f6-29de-4afa-b3d2-da933ac45eec",
+						"exec": [
+							"var Ajv = require('ajv'),",
+							"    ajv = new Ajv({logger: console, allErrors: true}), schema = {",
+							"    \"type\": \"object\",",
+							"    \"required\": [\"results\"],",
+							"    \"properties\": {",
+							"        \"results\": {",
+							"            \"type\": \"array\",",
+							"            \"items\": {",
+							"                \"type\": \"object\",",
+							"                \"required\": [\"idTmdb\", \"idUsuario\"],",
+							"                \"properties\": {",
+							"                    \"idTmdb\" : {",
+							"                        \"type\" : \"integer\"",
+							"                    }, \"idUsuario\" : {",
+							"                         \"type\" : \"string\"",
+							"                    }, ",
+							"                }",
+							"            }",
+							"        }",
+							"    }",
+							"}",
+							"",
+							"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200) });",
+							"pm.test(\"Return 1 item\", function () { pm.expect(pm.response.json().results.length).to.eql(1)});",
+							"pm.test(\"Return the right item\", function () { pm.expect(pm.response.json().results[0].idTmdb).to.eql(60574) && pm.expect(pm.response.json().results[0].idUsuario).to.eql(\"testIntegracion\")});",
+							"pm.test('Schema is valid', function() {",
+							"  pm.expect(tv4.validate(pm.response.json(), schema), JSON.stringify(ajv.errors)).to.be.true;",
+							"});",
+							"const echoDeleteRequest = {",
+							"  url: pm.variables.get('host') + '/listaNegra/serie/60574',",
+							"  method: 'DELETE',",
+							"  header: 'Authorization:Bearer ' +  pm.environment.get('currentAccessToken')",
+							"};",
+							"pm.sendRequest(echoDeleteRequest)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "331b6c54-73e7-426c-9abe-a32f8ceec3d9",
+						"exec": [
+							"const echoPostRequest = {",
+							"  url: pm.variables.get('host') + '/listaNegra/serie/60574',",
+							"  method: 'POST',",
+							"  header: 'Authorization:Bearer ' +  pm.environment.get('currentAccessToken')",
+							"};",
+							"pm.sendRequest(echoPostRequest)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/listaNegra/series",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"listaNegra",
+						"series"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "lista negra pelis",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "15b852e2-6842-4f9f-82b4-4ce72e029af2",
+						"exec": [
+							"pm.test(\"Status code is 202\", function () { pm.response.to.have.status(202) });",
+							"const echoGetRequest = {",
+							"  url: pm.variables.get('host') + '/listaNegra/peliculas',",
+							"  method: 'GET',",
+							"  header: 'Authorization:Bearer ' +  pm.environment.get('currentAccessToken')",
+							"};",
+							"pm.sendRequest(echoGetRequest, function (err, res) {",
+							"    pm.test(\"Delete the item\", function () { pm.expect(res.json().results.length).to.eql(0)});",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "831e9ec8-0043-4045-98c9-dba58bc271cd",
+						"exec": [
+							"const echoPostRequest = {",
+							"  url: pm.variables.get('host') + '/listaNegra/pelicula/126889',",
+							"  method: 'POST',",
+							"  header: 'Authorization:Bearer ' +  pm.environment.get('currentAccessToken')",
+							"};",
+							"pm.sendRequest(echoPostRequest)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/listaNegra/pelicula/126889",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"listaNegra",
+						"pelicula",
+						"126889"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "lista negra series",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "3d4164d5-2608-4cf0-b708-b54f86f9c97e",
+						"exec": [
+							"pm.test(\"Status code is 202\", function () { pm.response.to.have.status(202) });",
+							"const echoGetRequest = {",
+							"  url: pm.variables.get('host') + '/listaNegra/series',",
+							"  method: 'GET',",
+							"  header: 'Authorization:Bearer ' +  pm.environment.get('currentAccessToken')",
+							"};",
+							"pm.sendRequest(echoGetRequest, function (err, res) {",
+							"    pm.test(\"Delete the item\", function () { pm.expect(res.json().results.length).to.eql(0)});",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "1ec1b5d3-7cb9-45e8-b3cf-fac50524c4e8",
+						"exec": [
+							"const echoPostRequest = {",
+							"  url: pm.variables.get('host') + '/listaNegra/serie/60574',",
+							"  method: 'POST',",
+							"  header: 'Authorization:Bearer ' +  pm.environment.get('currentAccessToken')",
+							"};",
+							"pm.sendRequest(echoPostRequest)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/listaNegra/serie/60574",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"listaNegra",
+						"serie",
+						"60574"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{currentAccessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "8e8e5f19-9e99-4321-badd-5c0822de8331",
+				"type": "text/javascript",
+				"exec": [
+					"const echoPostRequest = {",
+					"  url: 'https://fis-backend-login.herokuapp.com/api/v1/authenticate',",
+					"  method: 'POST',",
+					"  header: 'Content-Type:application/json',",
+					"  body: {",
+					"    mode: 'application/json',",
+					"    raw: JSON.stringify(",
+					"        {",
+					"        \tlogin: \"testIntegracion\",",
+					"        \tpassword: 'testIntegracion'",
+					"        })",
+					"  }",
+					"};",
+					"",
+					"var getToken = true;",
+					"",
+					"if (!pm.environment.get('accessTokenExpiry') || ",
+					"    !pm.environment.get('currentAccessToken')) {",
+					"    console.log('Token or expiry date are missing')",
+					"} else if (pm.environment.get('accessTokenExpiry') <= (new Date()).getTime()) {",
+					"    console.log('Token is expired')",
+					"} else {",
+					"    getToken = false;",
+					"    console.log('Token and expiry date are all good');",
+					"}",
+					"",
+					"if (getToken === true) {",
+					"    pm.sendRequest(echoPostRequest, function (err, res) {",
+					"    console.log(err ? err : res.json());",
+					"        if (err === null) {",
+					"            console.log('Saving the token and expiry date')",
+					"            var responseJson = res.json();",
+					"            pm.environment.set('currentAccessToken', responseJson.token)",
+					"    ",
+					"            var expiryDate = new Date();",
+					"            expiryDate.setSeconds(expiryDate.getSeconds() + 3000);",
+					"            pm.environment.set('accessTokenExpiry', expiryDate.getTime());",
+					"        }",
+					"    });",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "dba7b5e9-b53a-4aac-8a09-5d7bde604722",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "3e3e91c3-6fde-4d24-a1da-f90bcf2e7e84",
+			"key": "host",
+			"value": "http://127.0.0.1:3000/recomendador/v1",
+			"type": "string"
+		},
+		{
+			"id": "98edd8b6-9c54-431a-8e1d-d9d790c84516",
+			"key": "currentAccessToken ",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "1fde4100-76a6-46d2-bf52-1bd6cd5d5bcb",
+			"key": "accessTokenExpiry",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"protocolProfileBehavior": {}
+}

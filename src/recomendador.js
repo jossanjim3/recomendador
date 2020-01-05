@@ -24,36 +24,168 @@ const reviewsRessource = require('./reviewsRessource');
 const authenticateService = require('./authenticateService')
 
 const UNAUTHORIZED_MSG = "Unauthorized: No correct token provided";
-const EMPTY_RVWS_MSG = "Unpossible: No reviews for this user";
 
-let peliculasRet = [];
-let seriesRet = [];
+/**
+ * @swagger
+ *  components:
+ *    schemas:
+ *      pelicula:
+ *        allOf:
+ *        - type: object
+ *          properties:
+ *            original_title:
+ *              type: string
+ *            id:
+ *              type: integer
+ *            video:
+ *              type: boolean
+ *            title:
+ *              type: string
+ *            vote_count:
+ *              type: integer
+ *            vote_average:
+ *              type: number
+ *            release_date:
+ *              type: string
+ *            poster_path:
+ *              type: string
+ *            genre_ids:
+ *              type: array
+ *              items:
+ *                type: integer
+ *            original_language:
+ *              type: string
+ *            backdrop_path:
+ *              type: string
+ *            adult:
+ *              type: boolean
+ *            overview:
+ *              type: string
+ *            origin_country:
+ *              type: array
+ *              items:
+ *                type: string
+ *            popularity:
+ *                type: number
+ *      serie:
+ *        allOf:
+ *        - type: object
+ *          properties:
+ *            original_name:
+ *              type: string
+ *            id:
+ *              type: integer
+ *            name:
+ *              type: string
+ *            vote_count:
+ *              type: integer
+ *            vote_average:
+ *              type: number
+ *            first_air_date:
+ *              type: string
+ *            poster_path:
+ *              type: string
+ *            genre_ids:
+ *              type: array
+ *              items:
+ *                type: integer
+ *            original_language:
+ *              type: string
+ *            backdrop_path:
+ *              type: string
+ *            overview:
+ *              type: string
+ *            origin_country:
+ *              type: array
+ *              items:
+ *                type: string
+ *            popularity:
+ *                type: number
+ *      listaNegra:
+ *        allOf:
+ *        - type: object
+ *          properties:
+ *            idTmdb:
+ *              type: integer
+ *            idUsuario:
+ *              type: string
+ */
 
 // --------------------------
 // ALEATORIOS
 // --------------------------
 
+/**
+ * @swagger
+ * path:
+ *  '/aleatorio/peliculas/{number}':
+ *    get:
+ *      tags:
+ *        - aleatorio
+ *      description: >-
+ *        Recomendador que devuelva aleatoriamente una lista de <number> peliculas (las que tienen buena puntuacion)
+ *      operationId: getAleatorioPeliculas
+ *      parameters:
+ *        - name: number
+ *          in: path
+ *          description: 'nombre de peliculas que recomendar (optional, 5 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
+ *          required: true
+ *          schema:
+ *            minimum: 1
+ *            type: integer
+ *            format: int64
+ *      responses:
+ *        '200':
+ *          description: OK
+ *          content:
+ *            application/json:
+ *              schema:
+ *                allOf:
+ *                - type: object
+ *                  properties:
+ *                    results:
+ *                      type: array
+ *                      items:
+ *                        $ref: '#/components/schemas/pelicula'
+ *        '401':
+ *           description: Unauthorized
+ *           content:
+ *             text/html:
+ *               schema:
+ *                 type: string
+ *                 format: base64
+ *                 default: 'Unauthorized: No correct token provided'
+ *      security:
+ *        - bearerAuth:
+ *          - read
+ */
+let peliculasRet;
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) peliculas populares de TMDB
 // ruta postman: http://localhost:3000/recomendador/aleatorio/peliculas
 router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 
     // inicializo la variable cada vez que se llama a la api
-    peliculasRet = []; // creada como variable global
+    peliculasRet = []; // creada como variable global, es necesario para que siempre haya como minimo 20
 
     console.log("");
     console.log("-------------");
     console.log(Date() + " - GET aleatorio peliculas TMDB")
     console.log("-------------");
     console.log("");
-
+    
     // numero de peliculas a devolver pasado por parametro
-    var number = req.query.number;
-    // olvidamos el parametro number y devuelve 20 recomendaciones. En la parte front con el selector se pone 5,10,15 o 20
-    number = 20;
-    console.log("number limit peliculas a devolver: " + number);
-
-    if (number <= 0 || number == undefined){
-        number = 5;
+    var number = req.params.number;
+    if (number == undefined){
+        number = 20;
+    }
+    
+    var userId;
+    try {
+        userId = await retrieveUserLogin(req.headers['authorization'])
+    } catch(err) {
+        res.status(401);
+        res.send(UNAUTHORIZED_MSG);
+        return;
     }
     
     var page = 1; // por defecto trae la pagina numero 1
@@ -71,9 +203,9 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
         return;
     }
 
-    while(peliculasRet.length < 20){
+    while(peliculasRet.length < number){
 
-        await obtenerPeliculasAleatoriasTmdb(page, userId);
+        await obtenerPeliculasAleatoriasTmdb(page, number, userId);
         page = page + 1;
 
     }
@@ -89,12 +221,13 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
         
     res.status(200); // 200 ok
     res.json({
-            results : peliculasRet
+        results : peliculasRet
     });
  
 });
 
-async function obtenerPeliculasAleatoriasTmdb(page,userId){
+
+async function obtenerPeliculasAleatoriasTmdb(page, number, userId){
     //if(mongoose.connection.readyState != 1) return false;
 
     // devuelve la lista de peliculas aleatoria con buena puntuacion de la api de tmdb
@@ -108,46 +241,85 @@ async function obtenerPeliculasAleatoriasTmdb(page,userId){
     for (var pelicula of peliculasTmdb.results) {
         console.log("Pelicula Id: " + pelicula.id);
         
-        try {
-            // compruebo si esta en la lista negra
-            if(mongoose.connection.readyState != 1) {
-                peliculasRet.push(pelicula);
-                console.log("añado pelicula: " + pelicula.id);
-
-            } else {
-                const storedDataArray = await ListaNegraPelis.findOne({ 'idTmdb' : pelicula.id, 'idUsuario': userId });
-                console.log("esta en lista negra: " + storedDataArray);
-                if (!storedDataArray){
-                    // si no esta en la lista negra lo añado al array a devolver
+        if(peliculasRet.length < number) {
+            try {
+                // compruebo si esta en la lista negra
+                if(mongoose.connection.readyState != 1) {
                     peliculasRet.push(pelicula);
                     console.log("añado pelicula: " + pelicula.id);
-                } else{
-                    console.log("no añado pelicula: " + pelicula.id);
+
+                } else {
+                    const storedDataArray = await ListaNegraPelis.findOne({ 'idTmdb' : pelicula.id, 'idUsuario': userId });
+                    console.log("esta en lista negra: " + storedDataArray);
+                    if (!storedDataArray){
+                        // si no esta en la lista negra lo añado al array a devolver
+                        peliculasRet.push(pelicula);
+                        console.log("añado pelicula: " + pelicula.id);
+                    } else{
+                        console.log("no añado pelicula: " + pelicula.id);
+                    }
+                }
+                
+                console.log("-------------");
+                
+            }
+            catch (err) {
+                if (err) {
+                    console.log("error: " + err);
+                    throw new Error(err.message);
                 }
             }
-            
-            console.log("-------------");
-
-            // hago el break cuando lleve number peliculas
-            // añado mas por si añade a la lista negra desde el front
-            /* if (peliculasRet.length == number){
-                console.log("devuelvo array con " + peliculasRet.length + " peliculas!");
-                break;
-            } */
-            
         }
-        catch (err) {
-            if (err) {
-                console.log("error: " + err);
-                throw new Error(err.message);
-            }
-        }                
 
     }
 
     return peliculasRet;
 }
 
+/**
+ * @swagger
+ * path:
+ *   '/aleatorio/series/{number}':
+ *      get:
+ *        tags:
+ *          - aleatorio
+ *        description: >-
+ *          Recomendador que devuelva aleatoriamente una lista de <number> series (las que tienen buena puntuacion)
+ *        operationId: getAleatorioSeries
+ *        parameters:
+ *          - name: number
+ *            in: path
+ *            description: 'nombre de series que recomendar (optional, 5 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
+ *            required: true
+ *            schema:
+ *              type: integer
+ *              format: int64
+ *        responses:
+ *          '200':
+ *            description: OK
+ *            content:
+ *              application/json:
+ *                schema:
+ *                  allOf:
+ *                  - type: object
+ *                    properties:
+ *                      results:
+ *                        type: array
+ *                        items:
+ *                          $ref: '#/components/schemas/serie'
+ *          '401':
+ *             description: Unauthorized
+ *             content:
+ *               text/html:
+ *                 schema:
+ *                   type: string
+ *                   format: base64
+ *                   default: 'Unauthorized: No correct token provided'
+ *      security:
+ *        - bearerAuth:
+ *          - read
+ */
+let seriesRet; 
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
 // (las que tienes buena puntuacion)
 router.get("/aleatorio/series/:number?", async (req, res) => {
@@ -157,17 +329,23 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     console.log("-------------");
     console.log("");
 
-    // inicializo la variable cada vez que se llama a la api
-    seriesRet = []; // creada como variable global
+    seriesRet = []; // creada como variable global, es necesario para que siempre haya como minimo 20
 
     // numero de series a devolver pasado por parametro
-    var number = req.query.number;
-    // olvidamos el parametro number y devuelve 20 recomendaciones. En la parte front con el selector se pone 5,10,15 o 20
-    number = 20;
-    console.log("number limit series a devolver: " + number);
+    var number = req.params.number;
+    console.log("number limit a devolver: " + number);
 
-    if (number <= 0 || number == undefined){
-        number = 5;
+    if (number == undefined){
+        number = 20;
+    }
+
+    var userId;
+    try {
+        userId = await retrieveUserLogin(req.headers['authorization'])
+    } catch(err) {
+        res.status(401);
+        res.send(UNAUTHORIZED_MSG);
+        return;
     }
     
     var page = 1; // por defecto trae la pagina numero 1
@@ -185,11 +363,10 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
         return;
     }
 
-    while(seriesRet.length < 20){
 
-        await obtenerSeriesAleatoriasTmdb(page, userId);
+    while(seriesRet.length < number){
+        await obtenerSeriesAleatoriasTmdb(page, number, userId);
         page = page + 1;
-
     }
 
     console.log("************* devuelvo array con " + seriesRet.length + " series!");
@@ -199,7 +376,8 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     res.json({results : seriesRet});
 });
 
-async function obtenerSeriesAleatoriasTmdb(page,userId){
+
+async function obtenerSeriesAleatoriasTmdb(page, number, userId){
 
     // devuelve la lista de series aleatoria con buena puntuacion de la api de tmdb
     const seriesTmdb = await peliculasTMDBResource.getAllPopularSeriesAleatorias(page);
@@ -212,42 +390,43 @@ async function obtenerSeriesAleatoriasTmdb(page,userId){
     for (var serie of seriesTmdb.results) {
         console.log("Serie Id: " + serie.id);
         
-        try {
-            // compruebo si esta en la lista negra
-            if(mongoose.connection.readyState != 1) {
-                seriesRet.push(serie);
-                console.log("añado serie: " + serie.id);
-
-            } else {
-                const storedDataArray = await ListaNegraSeries.findOne({ 'idTmdb' : serie.id, 'idUsuario': userId });
-                console.log("esta en lista negra: " + storedDataArray);
-                if (!storedDataArray){
-                    // si no esta en la lista negra lo añado al array a devolver
+        if(seriesRet.length < number) {
+            try {
+                // compruebo si esta en la lista negra
+                if(mongoose.connection.readyState != 1) {
                     seriesRet.push(serie);
                     console.log("añado serie: " + serie.id);
-                } else{
-                    console.log("no añado serie: " + serie.id);
+
+                } else {
+                    const storedDataArray = await ListaNegraSeries.findOne({ 'idTmdb' : serie.id, 'idUsuario': userId });
+                    console.log("esta en lista negra: " + storedDataArray);
+                    if (!storedDataArray){
+                        // si no esta en la lista negra lo añado al array a devolver
+                        seriesRet.push(serie);
+                        console.log("añado serie: " + serie.id);
+                    } else{
+                        console.log("no añado serie: " + serie.id);
+                    }
+                }
+                
+
+                console.log("-------------");
+
+                // hago el break cuando lleve number series
+                // añado mas por si añade a la lista negra desde el front
+                /* if (seriesRet.length == number){
+                    console.log("devuelvo array con " + seriesRet.length + " series!");
+                    break;
+                } */
+                
+            }
+            catch (err) {
+                if (err) {
+                    console.log("error: " + err);
+                    throw new Error(err.message);
                 }
             }
-            
-
-            console.log("-------------");
-
-            // hago el break cuando lleve number series
-            // añado mas por si añade a la lista negra desde el front
-            /* if (seriesRet.length == number){
-                console.log("devuelvo array con " + seriesRet.length + " series!");
-                break;
-            } */
-            
         }
-        catch (err) {
-            if (err) {
-                console.log("error: " + err);
-                throw new Error(err.message);
-            }
-        }                
-
     }
 
     return seriesRet;
@@ -442,7 +621,77 @@ async function estaEnListaNegraSeries(ressource, userId) {
     }
 }
 
-
+/**
+ * @swagger
+ * path:
+ *  '/porSimilitudes/pelicula/{filmId}/{number}':
+ *     get:
+ *       tags:
+ *         - similitudes
+ *       description: >-
+ *         Recomendador que devuelve una lista de hasta <number> películas de similares
+ *         categorías que otros usuarios han puntuado sobre la película puntuada.
+ *         La eleccion de estas peliculas se hace comparando las puntuaciones del
+ *         usuario autentificado con las de los otos usuarios.
+ *       operationId: getPeliculasPorSimilitudes
+ *       parameters:
+ *         - name: filmId
+ *           in: path
+ *           description: id de la pelicula puntuada
+ *           required: true
+ *           schema:
+ *             type: string
+ *         - name: number
+ *           in: path
+ *           description: 'nombre de peliculas que recomendar (optional, 5 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
+ *           required: true
+ *           schema:
+ *             minimum: 1
+ *             type: integer
+ *             format: int64
+ *       responses:
+ *         '200':
+ *           description: OK
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 allOf:
+ *                 - type: object
+ *                   properties:
+ *                     results:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/pelicula'
+ *         '401':
+ *           description: Unauthorized
+ *           content:
+ *             text/html:
+ *               schema:
+ *                 type: string
+ *                 format: base64
+ *                 default: 'Unauthorized: No correct token provided'
+ *         '412':
+ *           description: 'Precondition Failed (El id de la pelicula es incorrecta)'
+ *           content: {}
+ *         '417':
+ *           description: 'Expectation Failed (El usuario no ha puntado la pelicula. Devuelve unicamente peliculas similares segun tmdb sin tener cuenta del usuario y sin hacer ningun proceso particular)'
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 allOf:
+ *                 - type: object
+ *                   properties:
+ *                     results:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/pelicula'
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *             - read
+ */
 // devuelve una lista de hasta NUMBER películas (5 por defecto), de similar categorías que otros usuarios han puntuado 
 // sobre una película puntuada. La eleccion de estas peliculas se hace frente a las similaritudes 
 // de notacion del usuario con las notas de los otos usuarios.
@@ -452,7 +701,6 @@ router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
     console.log(Date() + " - GET por similitudes peliculas")
     console.log("-------------");
     console.log("");
-    //const userId ="agusnez"
     var userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
@@ -490,6 +738,77 @@ router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * path:
+ *  '/porSimilitudes/serie/{serieId}/{number}':
+ *     get:
+ *       tags:
+ *         - similitudes
+ *       description: >-
+ *         Recomendador que devuelve una lista de hasta <number> series de similares categorías
+ *         que otros usuarios han puntuado sobre la película puntuada. La eleccion
+ *         de estas series se hace comparando las puntuaciones del usuario
+ *         autentificado con las de los otos usuarios.
+ *       operationId: getSeriesPorSimilitudes
+ *       parameters:
+ *         - name: serieId
+ *           in: path
+ *           description: id de la serie puntuada
+ *           required: true
+ *           schema:
+ *             type: string
+ *         - name: number
+ *           in: path
+ *           description: 'nombre de series que recomendar (optional, 5 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
+ *           required: true
+ *           schema:
+ *             minimum: 1
+ *             type: integer
+ *             format: int64
+ *       responses:
+ *         '200':
+ *           description: OK
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 allOf:
+ *                 - type: object
+ *                   properties:
+ *                     results:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/serie'
+ *         '401':
+ *           description: Unauthorized
+ *           content:
+ *             text/html:
+ *               schema:
+ *                 type: string
+ *                 format: base64
+ *                 default: 'Unauthorized: No correct token provided'
+ *         '412':
+ *           description: 'Precondition Failed (El id de la serie es incorrecta)'
+ *           content: {}
+ *         '417':
+ *           description: 'Expectation Failed (El usuario no ha puntado la serie. Devuelve unicamente series similares segun tmdb sin tener cuenta del usuario y sin hacer ningun proceso particular)'
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 allOf:
+ *                 - type: object
+ *                   properties:
+ *                     results:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/serie'
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *             - read
+ */
 // devuelve una lista de hasta NUMBER series  (5 por defecto), de similar categorías que otros usuarios han 
 // puntuado sobre una película puntuada. La eleccion de estas peliculas, o series, se hace frente a 
 // las similaritudes de notacion del usuario con las notas de los otos usuarios.
@@ -499,7 +818,6 @@ router.get("/porSimilitudes/serie/:serieId/:number?", async (req, res) => {
     console.log(Date() + " - GET por similitudes series")
     console.log("-------------");
     console.log("");
-    //const userId ="agusnez"
     let userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
@@ -563,6 +881,34 @@ async function getResourceFromTmdb(idTmdb){
     return null;
 }
 
+/**
+ * @swagger
+ * path:
+ *  '/listaNegra/peliculas':
+ *     get:
+ *       tags:
+ *         - listaNegra
+ *       description: Recupera la lista de peliculas que no se deben recomendar al usuario autentificado.
+ *       operationId: getListaNegraPeliculas
+ *       responses:
+ *         '200':
+ *           description: OK
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/listaNegra'
+ *         '401':
+ *           description: Unauthorized
+ *           content: {}
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *             - read
+ */
 //Devuelve la lista de peliculas que no se debe recomandar al usuario
 router.get("/listaNegra/peliculas", async (req, res) => {
     console.log("");
@@ -613,6 +959,34 @@ router.get("/listaNegra/peliculas", async (req, res) => {
     });
 });
 
+/**
+ * @swagger
+ * path:
+ *  '/listaNegra/series':
+ *     get:
+ *       tags:
+ *         - listaNegra
+ *       description: Recupera la lista de series que no se deben recomendar al usuario autentificado.
+ *       operationId: getListaNegraSeries
+ *       responses:
+ *         '200':
+ *           description: OK
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/listaNegra'
+ *         '401':
+ *           description: Unauthorized
+ *           content: {}
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *             - read 
+ */
 //Devuelve la lista de series que no se debe recomandar al usuario
 router.get("/listaNegra/series", async (req, res) => {
 
@@ -656,6 +1030,41 @@ router.get("/listaNegra/series", async (req, res) => {
     });
 });
 
+/**
+ * @swagger
+ * path:
+ *  '/listaNegra/pelicula/{peliculaId}':
+ *     post:
+ *       tags:
+ *         - listaNegra
+ *       description: Guarda en BB.DD. la pelicula que no se debe recomendar al usuario autentificado.
+ *       operationId: addListaNegraPelicula
+ *       parameters:
+ *         - name: peliculaId
+ *           in: path
+ *           description: id de la pelicula para no recomendar
+ *           required: true
+ *           schema:
+ *             minimum: 1
+ *             type: integer
+ *             format: int64
+ *       responses:
+ *         '200':
+ *           description: Already exist
+ *           content: {}
+ *         '201':
+ *           description: Created
+ *           content: {}
+ *         '401':
+ *           description: Unauthorized
+ *           content: {}
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *             - read
+ */
 //Añade la pelicula a la lista de peliculas que no se debe recomandar al usuario
 // ruta postman: http://localhost:3000/recomendador/listaNegra/pelicula/419704
 router.post("/listaNegra/pelicula/:peliculaId", async (req, res) => {
@@ -712,6 +1121,41 @@ router.post("/listaNegra/pelicula/:peliculaId", async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * path:
+ *  '/listaNegra/serie/{serieId}':
+ *     post:
+ *       tags:
+ *         - listaNegra
+ *       description: Guarda en BB.DD. la serie que no se debe recomendar al usuario autentificado.
+ *       operationId: addListaNegraSerie
+ *       parameters:
+ *         - name: serieId
+ *           in: path
+ *           description: id de la serie para no recomendar
+ *           required: true
+ *           schema:
+ *             minimum: 1
+ *             type: integer
+ *             format: int64
+ *       responses:
+ *         '200':
+ *           description: Already exist
+ *           content: {}
+ *         '201':
+ *           description: Created
+ *           content: {}
+ *         '401':
+ *           description: Unauthorized
+ *           content: {}
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *             - read
+ */
 //Añade la serie a la lista de series que no se debe recomandar al usuario
 router.post("/listaNegra/serie/:serieId", async (req, res) => {
     
@@ -767,6 +1211,38 @@ router.post("/listaNegra/serie/:serieId", async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * path:
+ *  '/listaNegra/pelicula/{peliculaId}':
+ *     delete:
+ *       tags:
+ *         - listaNegra
+ *       description: Elimina de la BB.DD. la pelicula que no se debe recomendar al usuario autentificado.
+ *       operationId: deleteListaNegraPelicula
+ *       parameters:
+ *         - name: peliculaId
+ *           in: path
+ *           description: id de la pelicula para no recomendar
+ *           required: true
+ *           schema:
+ *             minimum: 1
+ *             type: integer
+ *             format: int64
+ *       responses:
+ *         '200':
+ *           description: OK
+ *           content: {}
+ *         '401':
+ *           description: Unauthorized
+ *           content: {}
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *             - read
+ */
 //Retira la pelicula de la lista de peliculas que no se debe recomandar al usuario
 router.delete("/listaNegra/pelicula/:peliculaId", async (req, res) => {
 
@@ -810,6 +1286,38 @@ router.delete("/listaNegra/pelicula/:peliculaId", async (req, res) => {
     }); */
 });
 
+/**
+ * @swagger
+ * path:
+ *  '/listaNegra/serie/{serieId}':
+ *     delete:
+ *       tags:
+ *         - listaNegra
+ *       description: Elimina de la BB.DD. la serie que no se debe recomendar al usuario autentificado.
+ *       operationId: deleteListaNegraSerie
+ *       parameters:
+ *         - name: serieId
+ *           in: path
+ *           description: id de la serie para no recomendar
+ *           required: true
+ *           schema:
+ *             minimum: 1
+ *             type: integer
+ *             format: int64
+ *       responses:
+ *         '200':
+ *           description: OK
+ *           content: {}
+ *         '401':
+ *           description: Unauthorized
+ *           content: {}
+ *         '500':
+ *           description: Internal Server Error
+ *           content: {}
+ *       security:
+ *         - bearerAuth:
+ *           - read
+*/
 //Retira la serie de la lista de series que no se debe recomandar al usuario
 router.delete("/listaNegra/serie/:serieId", async (req, res) => {
 
