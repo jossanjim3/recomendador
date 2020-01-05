@@ -30,7 +30,7 @@ describe("Recomendador Aleatorio Test API", () => {
 
     it('should return films with the right structure', async () => {
         mockPeliculasSet1();
-        return obtenerPeliculasAleatoriasTmdb(1, 1, 'admin')
+        return obtenerPeliculasAleatoriasTmdb([], 1, 1, 'admin')
           .then(response => {
             //expect an object back
             expect(typeof response).to.equal('object');
@@ -43,7 +43,7 @@ describe("Recomendador Aleatorio Test API", () => {
 
     it('should return TV shows with the right structure', async () => {
         mockSeriesSet1();
-        return obtenerSeriesAleatoriasTmdb(1, 1, 'admin')
+        return obtenerSeriesAleatoriasTmdb([], 1, 1, 'admin')
           .then(response => {
             //expect an object back
             expect(typeof response).to.equal('object');

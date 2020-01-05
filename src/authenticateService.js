@@ -1,7 +1,15 @@
 const urljoin = require('url-join');
 const request = require('request-promise-native').defaults({json: true});
 
+var CommandsFactory = require('hystrixjs').commandFactory;
+var serviceCommand = CommandsFactory.getOrCreate("TMDB").run(request).build();
+
 class AuthenticateService {
+
+    static getRequest(url, options= {}, callback = () => {return;}) {
+        var promise = serviceCommand.execute(url, options, callback);
+        return promise;
+    }
 
     static authenticateApi(url){
         const urlAPI = "https://fis-backend-login.herokuapp.com/api/v1";
@@ -21,7 +29,7 @@ class AuthenticateService {
             headers: AuthenticateService.requestHeaders(token),
         }
         //console.log(options);
-        return request.get(url, options);
+        return AuthenticateService.getRequest(url, options);
     }
 
 }
