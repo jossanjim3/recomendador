@@ -12,7 +12,7 @@ class ReviewsRessource {
     }
 
     static reviewsApiRessources(url){
-        const urlAPI = "http://reviews-api.herokuapp.com/v1/reviews";
+        const urlAPI = "https://fis-api-gateway.herokuapp.com/api/v1";
         return urljoin(urlAPI, url);
     }
 
@@ -29,7 +29,7 @@ class ReviewsRessource {
     }
 
     static getAllReviewsByUser() {
-        const url = ReviewsRessource.reviewsApiRessources("");
+        const url = ReviewsRessource.reviewsApiRessources("/reviews");
         //console.log(url);
         const options = {
             headers: ReviewsRessource.requestHeaders(),
