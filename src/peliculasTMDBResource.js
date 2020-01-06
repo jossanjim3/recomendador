@@ -14,13 +14,27 @@ class PeliculasTMDBResource {
         const peliculasServer = (process.env.FIND_URL || urlAPI);
 
         return urljoin(peliculasServer, url);
-    }
+    }    
 
     static seriesTmdbResource(url){
         const urlAPI = "https://api.themoviedb.org/3/tv";
         const peliculasServer = (process.env.SERIES_URL || urlAPI);
 
         return urljoin(peliculasServer, url);
+    }
+
+    static tmdbResourcePelicula(url){
+        const urlAPI = "https://api.themoviedb.org/3/movie";
+        const imdbResource = (process.env.FIND_URL || urlAPI);
+
+        return urljoin(imdbResource, url);
+    }
+
+    static tmdbResourceSerie(url){
+        const urlAPI = "https://api.themoviedb.org/3/tv";
+        const imdbResource = (process.env.FIND_URL || urlAPI);
+
+        return urljoin(imdbResource, url);
     }
 
     // Get a list of movies on TMDB.
@@ -102,6 +116,34 @@ class PeliculasTMDBResource {
         //console.log(options);
         return request.get(url, options);
     }
+
+    /* 
+        Devuelve la pelicula de TMDB a partir de id pasado por parametro
+    */
+    static getTmdbRessourceFromTmdbPelicula(imdbId){        
+        const url = PeliculasTMDBResource.tmdbResourcePelicula("/" + imdbId);
+        //console.log(url);
+        const options = {
+            headers: PeliculasTMDBResource.requestHeaders(),
+            qs:      PeliculasTMDBResource.requestParams("1"), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+        }
+        //console.log(options);
+        return request.get(url, options);
+    }
+
+    /* 
+        Devuelve la serie de TMDB a partir de id pasado por parametro
+    */
+   static getTmdbRessourceFromTmdbSerie(imdbId){        
+    const url = PeliculasTMDBResource.tmdbResourceSerie("/" + imdbId);
+    //console.log(url);
+    const options = {
+        headers: PeliculasTMDBResource.requestHeaders(),
+        qs:      PeliculasTMDBResource.requestParams("1"), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+    }
+    //console.log(options);
+    return request.get(url, options);
+}
 
     /*
         Devuelve el promise de la peticion de un recurso de tmdb identificado por un id imdb (o el recurso si se llama la funcion con await).

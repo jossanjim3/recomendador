@@ -173,7 +173,9 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
     console.log("");
     
     // numero de peliculas a devolver pasado por parametro
+    //var number = req.param('number');
     var number = req.params.number;
+    console.log("number param url: " + number);
     if (number == undefined){
         number = 20;
     }
@@ -228,33 +230,33 @@ async function obtenerPeliculasAleatoriasTmdb(page, number, userId){
     const peliculasTmdb = await peliculasTMDBResource.getAllPopularPeliculasAleatorias(page);
     //console.log("total peliculasTmdb: " + peliculasTmdb.results.length);
 
-    console.log("");
+    /* console.log("");
     console.log("Recorremos array...");
-    console.log("");
+    console.log(""); */
 
     for (var pelicula of peliculasTmdb.results) {
-        console.log("Pelicula Id: " + pelicula.id);
+        //console.log("Pelicula Id: " + pelicula.id);
         
         if(peliculasRet.length < number) {
             try {
                 // compruebo si esta en la lista negra
                 if(mongoose.connection.readyState != 1) {
                     peliculasRet.push(pelicula);
-                    console.log("añado pelicula: " + pelicula.id);
+                    //console.log("añado pelicula: " + pelicula.id);
 
                 } else {
                     const storedDataArray = await ListaNegraPelis.findOne({ 'idTmdb' : pelicula.id, 'idUsuario': userId });
-                    console.log("esta en lista negra: " + storedDataArray);
+                    //console.log("esta en lista negra: " + storedDataArray);
                     if (!storedDataArray){
                         // si no esta en la lista negra lo añado al array a devolver
                         peliculasRet.push(pelicula);
-                        console.log("añado pelicula: " + pelicula.id);
+                        //console.log("añado pelicula: " + pelicula.id);
                     } else{
-                        console.log("no añado pelicula: " + pelicula.id);
+                        //console.log("no añado pelicula: " + pelicula.id);
                     }
                 }
                 
-                console.log("-------------");
+                //console.log("-------------");
                 
             }
             catch (err) {
@@ -326,7 +328,7 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
 
     // numero de series a devolver pasado por parametro
     var number = req.params.number;
-    console.log("number limit a devolver: " + number);
+    console.log("number param url: " + number);
 
     if (number == undefined){
         number = 20;
@@ -370,34 +372,34 @@ async function obtenerSeriesAleatoriasTmdb(page, number, userId){
     const seriesTmdb = await peliculasTMDBResource.getAllPopularSeriesAleatorias(page);
     //console.log("total seriesTmdb: " + seriesTmdb.results.length);
 
-    console.log("");
+    /* console.log("");
     console.log("Recorremos array...");
-    console.log("");
+    console.log(""); */
 
     for (var serie of seriesTmdb.results) {
-        console.log("Serie Id: " + serie.id);
+        //console.log("Serie Id: " + serie.id);
         
         if(seriesRet.length < number) {
             try {
                 // compruebo si esta en la lista negra
                 if(mongoose.connection.readyState != 1) {
                     seriesRet.push(serie);
-                    console.log("añado serie: " + serie.id);
+                    //console.log("añado serie: " + serie.id);
 
                 } else {
                     const storedDataArray = await ListaNegraSeries.findOne({ 'idTmdb' : serie.id, 'idUsuario': userId });
-                    console.log("esta en lista negra: " + storedDataArray);
+                    //console.log("esta en lista negra: " + storedDataArray);
                     if (!storedDataArray){
                         // si no esta en la lista negra lo añado al array a devolver
                         seriesRet.push(serie);
-                        console.log("añado serie: " + serie.id);
+                        //console.log("añado serie: " + serie.id);
                     } else{
-                        console.log("no añado serie: " + serie.id);
+                        //console.log("no añado serie: " + serie.id);
                     }
                 }
                 
 
-                console.log("-------------");
+                //console.log("-------------");
 
                 // hago el break cuando lleve number series
                 // añado mas por si añade a la lista negra desde el front
@@ -851,12 +853,12 @@ router.get("/porSimilitudes/serie/:serieId/:number?", async (req, res) => {
 // LISTA NEGRA
 // --------------------------
 
-async function getResourceFromTmdb(idTmdb){
+async function getResourceFromTmdbPelicula(idTmdb){
     //console.log("id tmdb: " + idTmdb);
     try {
-        const movieData =  (await peliculasTMDBResource.getTmdbRessourceFromImdb(idTmdb)).movie_results[0];
+        const movieData =  (await peliculasTMDBResource.getTmdbRessourceFromTmdbPelicula(idTmdb));
         if(movieData !== null) {
-            console.log("metodo recupera peli de tmdb con id: " + movieData );
+            //console.log("metodo recupera recurso de tmdb con id: " + movieData.id + ", " + movieData.original_title );
             return movieData;
         }
     } catch (err) {
@@ -917,27 +919,54 @@ router.get("/listaNegra/peliculas", async (req, res) => {
     let listaNegraPelis = [];
 
     // como el filtro el vacio {} devuelve todos los elementos
-    ListaNegraPelis.find({"idUsuario": userId}, (err, elementos) => {
+    ListaNegraPelis.find({"idUsuario": userId}, async (err, elementos) => {
         if (err) {
             console.log(Date() + " - " + err);
             res.sendStatus(500);
         } else {
 
-            /* esto no funciona, no recupera el los datos de la pelicula, el id de tmdb no sirve, debe ser el id imdb */
-            /* for (var elemento of elementos) {
-                console.log("Elemento id a recuperar from tmdb: " + elemento.idTmdb);
-                const movieData =  getResourceFromTmdb(elemento.idTmdb);
-                if(movieData !== null){
-                    listaNegraPelis.push(movieData);
-                    //console.log("Peli recuperada de la lista negra con id: " + movieData.id)
+            for (var elemento of elementos) {
+                //console.log("Elemento id a recuperar from tmdb: " + elemento.idTmdb);
+                try {
+                    var movieData = await getResourceFromTmdbPelicula(elemento.idTmdb);
+                    if(movieData !== null){
+                        var idTmdbResource = elemento.idTmdb;
+                        var nameTmdbResource = movieData.original_title;
+                        //console.log("name movie data: " + nameTmdbResource);
+                        var userName = userId;
+                        //listaNegraPelis.push(movieData);
+                        listaNegraPelis.push({
+                            idTmdb : idTmdbResource,
+                            name : nameTmdbResource,
+                            idUsuario : userName
+                        });
+                        //console.log("Peli recuperada de la lista negra con id: " + movieData.id)
+                    } else {
+                        /* elemento = elemento.cleanup();
+                        listaNegraPelis.push(elemento); */
+                        var idTmdbResource = elemento.idTmdb;
+                        var nameTmdbResource = "Unknown";
+                        var userName = userId;
+                        //listaNegraPelis.push(movieData);
+                        listaNegraPelis.push({
+                            idTmdb : idTmdbResource,
+                            name : nameTmdbResource,
+                            idUsuario : userName
+                        });
+                    }
+                } catch(err) {
+                    console.log("Error recuperar elementos de TMDB /listaNegra/peliculas: " + err);
+                    res.sendStatus(500);
+                    return;
                 }
-            }   */        
+                
+            }       
             
-            // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
+            /* // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
             elementos.map((elemento) => {
                 elemento = elemento.cleanup();
                 listaNegraPelis.push(elemento);
-            });
+            }); */
 
             console.log("Lista negra numero peliculas: " + listaNegraPelis.length);
             res.status(200); // 200 ok
@@ -945,6 +974,24 @@ router.get("/listaNegra/peliculas", async (req, res) => {
         }
     });
 });
+
+
+async function getResourceFromTmdbSerie(idTmdb){
+    //console.log("id tmdb: " + idTmdb);
+    try {
+        const movieData =  (await peliculasTMDBResource.getTmdbRessourceFromTmdbSerie(idTmdb));
+        if(movieData !== null) {
+            //console.log("metodo recupera recurso de tmdb con id: " + movieData.id + ", " + movieData.original_title );
+            return movieData;
+        }
+    } catch (err) {
+        if (err) {
+            console.log("Error: " + err);
+            return null;
+        }
+    }
+    return null;
+}
 
 /**
  * @swagger
@@ -997,18 +1044,55 @@ router.get("/listaNegra/series", async (req, res) => {
     let listaNegraSeries = [];
 
     // como el filtro el vacio {} devuelve todos los elementos
-    ListaNegraSeries.find({"idUsuario": userId}, (err, elementos) => {
+    ListaNegraSeries.find({"idUsuario": userId}, async (err, elementos) => {
         if (err) {
             console.log(Date() + " - " + err);
             res.sendStatus(500);
             
         } else {
 
-            // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
+            for (var elemento of elementos) {
+                //console.log("Elemento id a recuperar from tmdb: " + elemento.idTmdb);
+                try {
+                    var movieData = await getResourceFromTmdbSerie(elemento.idTmdb);
+                    if(movieData !== null){
+                        var idTmdbResource = elemento.idTmdb;
+                        var nameTmdbResource = movieData.name;
+                        //console.log("name movie data: " + nameTmdbResource);
+                        var userName = userId;
+                        //listaNegraSeries.push(movieData);
+                        listaNegraSeries.push({
+                            idTmdb : idTmdbResource,
+                            name : nameTmdbResource,
+                            idUsuario : userName
+                        });
+                        //console.log("Peli recuperada de la lista negra con id: " + movieData.id)
+                    } else {
+                        /* elemento = elemento.cleanup();
+                        listaNegraSeries.push(elemento); */
+                        var idTmdbResource = elemento.idTmdb;
+                        var nameTmdbResource = "Unknown";
+                        var userName = userId;
+                        //listaNegraPelis.push(movieData);
+                        listaNegraSeries.push({
+                            idTmdb : idTmdbResource,
+                            name : nameTmdbResource,
+                            idUsuario : userName
+                        });
+                    }
+                } catch(err) {
+                    console.log("Error recuperar elementos de TMDB /listaNegra/peliculas: " + err);
+                    res.sendStatus(500);
+                    return;
+                }
+                
+            }
+
+            /* // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
             elementos.map((elemento) => {
                 elemento = elemento.cleanup();
                 listaNegraSeries.push(elemento);
-            });
+            }); */
 
             console.log("Lista negra numero series: " + listaNegraSeries.length);
             res.status(200); // 200 ok
