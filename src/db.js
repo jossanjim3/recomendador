@@ -42,7 +42,7 @@ Instalarlo en local y lanzarlo (ver https://www.mongodb.com)
 
 // si configuramos variable de entorno o por defecto
 //const DB_URL = (process.env.MONGO_URL || 'mongodb://mongo/test')
-const DB_URL = (process.env.MONGO_URL || 'mongodb://localhost/recomendador') // me crea una bbdd llamada test
+const DB_URL = (process.env.MONGO_URL || 'mongodb://localhost/recomendador') // me crea una bbdd llamada recomendador
 
 const dbConnect = function(){
     const db = mongoose.connection;
