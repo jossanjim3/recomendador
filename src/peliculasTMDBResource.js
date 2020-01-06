@@ -136,7 +136,7 @@ class PeliculasTMDBResource {
             qs:      PeliculasTMDBResource.requestParams("1"), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
         }
         //console.log(options);
-        return request.get(url, options);
+        return PeliculasTMDBResource.getRequest(url, options);
     }
 
     /* 
@@ -150,7 +150,7 @@ class PeliculasTMDBResource {
         qs:      PeliculasTMDBResource.requestParams("1"), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
     }
     //console.log(options);
-    return request.get(url, options);
+    return PeliculasTMDBResource.getRequest(url, options);
 }
 
     /*

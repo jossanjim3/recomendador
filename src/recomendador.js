@@ -119,7 +119,7 @@ const NOT_RESPONDING_MSG = "Time-out: An external server is not responding";
 /**
  * @swagger
  * path:
- *  '/aleatorio/peliculas/{number}':
+ *  '/aleatorio/peliculas':
  *    get:
  *      tags:
  *        - aleatorio
@@ -128,9 +128,9 @@ const NOT_RESPONDING_MSG = "Time-out: An external server is not responding";
  *      operationId: getAleatorioPeliculas
  *      parameters:
  *        - name: number
- *          in: path
- *          description: 'nombre de peliculas que recomendar (optional, 5 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
- *          required: true
+ *          in: query
+ *          description: 'nombre de peliculas que recomendar (optional, 20 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
+ *          required: false
  *          schema:
  *            minimum: 1
  *            type: integer
@@ -163,9 +163,9 @@ const NOT_RESPONDING_MSG = "Time-out: An external server is not responding";
  *        - bearerAuth:
  *          - read
  */
-// Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) peliculas populares de TMDB
+// Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (20 por defecto) peliculas populares de TMDB
 // ruta postman: http://localhost:3000/recomendador/aleatorio/peliculas
-router.get("/aleatorio/peliculas/:number?", async (req, res) => {
+router.get("/aleatorio/peliculas", async (req, res) => {
 
     console.log("");
     console.log("-------------");
@@ -176,7 +176,7 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
     let peliculasRet = [];
     
     // numero de peliculas a devolver pasado por parametro
-    var number = req.params.number;
+    var number = req.query.number || 20;
     
     var userId;
     try {
@@ -263,7 +263,7 @@ async function obtenerPeliculasAleatoriasTmdb(peliculasRet, page, number, userId
 /**
  * @swagger
  * path:
- *   '/aleatorio/series/{number}':
+ *   '/aleatorio/series':
  *      get:
  *        tags:
  *          - aleatorio
@@ -272,9 +272,9 @@ async function obtenerPeliculasAleatoriasTmdb(peliculasRet, page, number, userId
  *        operationId: getAleatorioSeries
  *        parameters:
  *          - name: number
- *            in: path
- *            description: 'nombre de series que recomendar (optional, 5 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
- *            required: true
+ *            in: query
+ *            description: 'nombre de series que recomendar (optional, 20 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
+ *            required: false
  *            schema:
  *              type: integer
  *              format: int64
@@ -308,7 +308,7 @@ async function obtenerPeliculasAleatoriasTmdb(peliculasRet, page, number, userId
  */
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
 // (las que tienes buena puntuacion)
-router.get("/aleatorio/series/:number?", async (req, res) => {
+router.get("/aleatorio/series", async (req, res) => {
     console.log("");
     console.log("-------------");
     console.log(Date() + " - GET aleatorio series TMDB")
@@ -318,7 +318,7 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     let seriesRet = [];
 
     // numero de series a devolver pasado por parametro
-    var number = req.params.number;
+    var number = req.query.number || 20;
     console.log("number limit a devolver: " + number);
 
     var userId;
