@@ -46,25 +46,25 @@ const EXT_SOURCE = "&external_source=imdb_id";
 const AUTHENTIFICATION_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluIiwiaWF0IjoxNTc3OTg5MzgwLCJleHAiOjE1Nzc5OTI5ODB9.8HQaMFCpyvdpd4csrvnwv5PkMkrmPu_zg5rSq119xbY";
 
 function mockCheckToken() {
-    nock('https://fis-backend-login.herokuapp.com/api/v1')
+    nock('https://fis-api-gateway.herokuapp.com/api/v1')
         .persist()
         .get('/checkToken')
         .reply(200, "OK");
 }
 
 function mockReviewsSet1() {
-    nock('http://reviews-api.herokuapp.com/v1')
+    nock('https://fis-api-gateway.herokuapp.com/api/v1')
             .get('/reviews')
             .reply(200, reviewsSet1);
 }
 function mockReviewsSet2() {
-    nock('http://reviews-api.herokuapp.com/v1')
+    nock('https://fis-api-gateway.herokuapp.com/api/v1')
             .get('/reviews')
             .reply(200, reviewsSet2);
 }
 
 function mockReviewsSet3() {
-    nock('http://reviews-api.herokuapp.com/v1')
+    nock('https://fis-api-gateway.herokuapp.com/api/v1')
             .get('/reviews')
             .reply(200, reviewsSet3);
 }

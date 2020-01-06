@@ -121,14 +121,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/aleatorio/series/8",
+							"raw": "{{host}}/aleatorio/series/",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"aleatorio",
 								"series",
-								"8"
+								""
 							]
 						}
 					},
@@ -380,7 +380,7 @@
 				"type": "text/javascript",
 				"exec": [
 					"const echoPostRequest = {",
-					"  url: 'https://fis-backend-login.herokuapp.com/api/v1/authenticate',",
+					"  url: 'https://fis-api-gateway.herokuapp.com/api/v1/authenticate',",
 					"  method: 'POST',",
 					"  header: 'Content-Type:application/json',",
 					"  body: {",

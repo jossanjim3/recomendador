@@ -196,7 +196,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "9ddec6ca-9ed7-4499-8fb7-66a2d1356a07",
+								"id": "22eb4af1-ee78-40a0-934e-63959aba7a90",
 								"exec": [
 									"var Ajv = require('ajv'),",
 									"    ajv = new Ajv({logger: console, allErrors: true}), schema = {",
@@ -255,6 +255,7 @@
 									"}",
 									"",
 									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200) });",
+									"pm.test(\"Return 10 movies\", function () { pm.expect(pm.response.json().results).to.have.lengthOf(10)});",
 									"pm.test('Schema is valid', function() {",
 									"  pm.expect(tv4.validate(pm.response.json(), schema), JSON.stringify(ajv.errors)).to.be.true;",
 									"});"
@@ -265,16 +266,27 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{host}}/aleatorio/peliculas/",
+							"raw": "{{host}}/aleatorio/peliculas?number=10",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"aleatorio",
-								"peliculas",
-								""
+								"peliculas"
+							],
+							"query": [
+								{
+									"key": "number",
+									"value": "10"
+								}
 							]
 						}
 					},
@@ -342,6 +354,7 @@
 									"    ",
 									"}",
 									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200) });",
+									"pm.test(\"Return 8 series\", function () { pm.expect(pm.response.json().results).to.have.lengthOf(8)});",
 									"pm.test('Schema is valid', function() {",
 									"  pm.expect(tv4.validate(pm.response.json(), schema), JSON.stringify(ajv.errors)).to.be.true;",
 									"});"
@@ -352,16 +365,27 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{host}}/aleatorio/series/",
+							"raw": "{{host}}/aleatorio/series?number=8",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"aleatorio",
-								"series",
-								""
+								"series"
+							],
+							"query": [
+								{
+									"key": "number",
+									"value": "8"
+								}
 							]
 						}
 					},
@@ -747,7 +771,7 @@
 				"type": "text/javascript",
 				"exec": [
 					"const echoPostRequest = {",
-					"  url: 'https://fis-backend-login.herokuapp.com/api/v1/authenticate',",
+					"  url: 'https://fis-api-gateway.herokuapp.com/api/v1/authenticate',",
 					"  method: 'POST',",
 					"  header: 'Content-Type:application/json',",
 					"  body: {",
@@ -802,19 +826,19 @@
 	],
 	"variable": [
 		{
-			"id": "3e3e91c3-6fde-4d24-a1da-f90bcf2e7e84",
+			"id": "8ea45ef2-10b0-4023-be17-3062a768be87",
 			"key": "host",
 			"value": "http://127.0.0.1:3000/recomendador/v1",
 			"type": "string"
 		},
 		{
-			"id": "98edd8b6-9c54-431a-8e1d-d9d790c84516",
+			"id": "04de17f1-5dcd-4ec5-a320-2af3d13dae3a",
 			"key": "currentAccessToken ",
 			"value": "",
 			"type": "string"
 		},
 		{
-			"id": "1fde4100-76a6-46d2-bf52-1bd6cd5d5bcb",
+			"id": "7f68e43e-f348-4569-a537-adb0de69845e",
 			"key": "accessTokenExpiry",
 			"value": "",
 			"type": "string"
