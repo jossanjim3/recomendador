@@ -173,11 +173,14 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
     console.log("");
     
     // numero de peliculas a devolver pasado por parametro
-    //var number = req.param('number');
-    var number = req.params.number;
+    //var number = req.param('number'); // deprecated
+    //var number = req.params.number; // undefined
+    var number = req.query.number; // ?blablabla
     console.log("number param url: " + number);
     if (number == undefined){
         number = 20;
+    } else {
+        number = 20; // por defecto en aleatorio va a devolver como minimo 20
     }
     
     var page = 1; // por defecto trae la pagina numero 1
@@ -327,11 +330,15 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     let seriesRet = []; // necesario para que siempre haya como minimo 20
 
     // numero de series a devolver pasado por parametro
-    var number = req.params.number;
+    //var number = req.param('number'); // deprecated
+    //var number = req.params.number; // undefined
+    var number = req.query.number; // ?blablabla
     console.log("number param url: " + number);
 
     if (number == undefined){
         number = 20;
+    } else {
+        number = 20; // por defecto en aleatorio devuelve como minimo 20...
     }
 
     var page = 1; // por defecto trae la pagina numero 1
@@ -698,7 +705,10 @@ router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
         res.send(UNAUTHORIZED_MSG);
         return;
     }
-    var number = req.params.number || 5;
+
+    //var number = req.param('number'); // deprecated
+    //var number = req.params.number; // undefined
+    var number = req.query.number || 5; // ?blablabla
     const ratings = await getAndFormatRatings(req.params.filmId);
     if(ratings != undefined) {
         const mainUserRatings = ratings.find(user => user.id == userId)
@@ -816,7 +826,9 @@ router.get("/porSimilitudes/serie/:serieId/:number?", async (req, res) => {
         return;
     }
     // /userId = "agusnez";
-    var number = req.params.number || 5;
+    //var number = req.param('number'); // deprecated
+    //var number = req.params.number; // undefined
+    var number = req.query.number || 5; // ?blablabla
     const ratings =  await getAndFormatRatings(req.params.serieId);
     if(ratings != undefined) {
         const mainUserRatings = ratings.find(user => user.id == userId)
