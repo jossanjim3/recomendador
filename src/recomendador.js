@@ -24,6 +24,7 @@ const reviewsRessource = require('./reviewsRessource');
 const authenticateService = require('./authenticateService')
 
 const UNAUTHORIZED_MSG = "Unauthorized: No correct token provided";
+const NOT_RESPONDING_MSG = "Time-out: An external server is not responding";
 
 /**
  * @swagger
@@ -155,6 +156,9 @@ const UNAUTHORIZED_MSG = "Unauthorized: No correct token provided";
  *                 type: string
  *                 format: base64
  *                 default: 'Unauthorized: No correct token provided'
+ *        '500':
+ *           description: Internal server error
+ *           content: {}
  *      security:
  *        - bearerAuth:
  *          - read
@@ -197,7 +201,6 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
         res.send(UNAUTHORIZED_MSG);
         return;
     }
-
     while(peliculasRet.length < number){
 
         let peliculas = [];
@@ -210,13 +213,6 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
 
     console.log("************* devuelvo array con " + peliculasRet.length + " peliculas!");
 
-    //res.send(peliculasRet);
-    /* res.json({page: 1,
-            total_results: 10000,
-            total_pages: 500,
-            results : peliculasRet
-        }); */
-        
     res.status(200); // 200 ok
     res.json({
         results : peliculasRet
@@ -224,13 +220,17 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
  
 });
 
-
 async function obtenerPeliculasAleatoriasTmdb(page, number, userId){
     //if(mongoose.connection.readyState != 1) return false;
     let peliculasRet = [];
 
     // devuelve la lista de peliculas aleatoria con buena puntuacion de la api de tmdb
-    const peliculasTmdb = await peliculasTMDBResource.getAllPopularPeliculasAleatorias(page);
+    let peliculasTmdb
+    try {
+        peliculasTmdb = await peliculasTMDBResource.getAllPopularPeliculasAleatorias(page);
+    } catch(err) {;
+        throw err;
+    }
     //console.log("total peliculasTmdb: " + peliculasTmdb.results.length);
 
     /* console.log("");
@@ -239,7 +239,7 @@ async function obtenerPeliculasAleatoriasTmdb(page, number, userId){
 
     for (var pelicula of peliculasTmdb.results) {
         //console.log("Pelicula Id: " + pelicula.id);
-        
+      
         if(peliculasRet.length < number) {
             try {
                 // compruebo si esta en la lista negra
@@ -259,8 +259,7 @@ async function obtenerPeliculasAleatoriasTmdb(page, number, userId){
                     }
                 }
                 
-                //console.log("-------------");
-                
+                //console.log("-------------");                
             }
             catch (err) {
                 if (err) {
@@ -314,6 +313,9 @@ async function obtenerPeliculasAleatoriasTmdb(page, number, userId){
  *                   type: string
  *                   format: base64
  *                   default: 'Unauthorized: No correct token provided'
+ *          '500':
+ *             description: Internal server error
+ *             content: {}
  *      security:
  *        - bearerAuth:
  *          - read
@@ -354,7 +356,6 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
         return;
     }
 
-
     while(seriesRet.length < number){
         let series = [];
         series = await obtenerSeriesAleatoriasTmdb(page, number, userId);
@@ -370,13 +371,17 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     res.json({results : seriesRet});
 });
 
-
 async function obtenerSeriesAleatoriasTmdb(page, number, userId){
 
     let seriesRet = [];
 
     // devuelve la lista de series aleatoria con buena puntuacion de la api de tmdb
-    const seriesTmdb = await peliculasTMDBResource.getAllPopularSeriesAleatorias(page);
+    let seriesTmdb
+    try {
+        seriesTmdb = await peliculasTMDBResource.getAllPopularSeriesAleatorias(page);
+    } catch(err) {
+        throw err;
+    }
     //console.log("total seriesTmdb: " + seriesTmdb.results.length);
 
     /* console.log("");
@@ -417,10 +422,7 @@ async function obtenerSeriesAleatoriasTmdb(page, number, userId){
                 
             }
             catch (err) {
-                if (err) {
-                    console.log("error: " + err);
-                    throw new Error(err.message);
-                }
+                throw err;
             }
         }
     }
@@ -722,7 +724,6 @@ router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
             const moviesGlobalSetIds = getMoviesAndSeriesSet(sortedRatings, mainUserRatings);
             moviesFilteredSet = await checkMovies(moviesGlobalSetIds, req.params.filmId, userId, number);
         }
-        
         if(moviesFilteredSet == null || (moviesFilteredSet.length == 0 && number > 0)) {
             res.status(412);
             res.send([]);
