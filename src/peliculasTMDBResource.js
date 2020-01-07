@@ -65,13 +65,13 @@ class PeliculasTMDBResource {
         
     }
 
-    // parametros de la consulta a la api -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+    // parametros de la consulta a la api
     static requestParams(page){
         const tmdbKey = (process.env.TMBD_KEY || '18268e82edbd92497a6d18853ddf8c57');
         const language = 'es-ES';
 
         return {
-            api_key : tmdbKey, // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+            api_key : tmdbKey, 
             language : language,
             page : page
         }
@@ -83,7 +83,7 @@ class PeliculasTMDBResource {
         //console.log(url);
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(page), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+            qs:      PeliculasTMDBResource.requestParams(page), 
         }
         //console.log(options);
         return PeliculasTMDBResource.getRequest(url, options);
@@ -95,7 +95,7 @@ class PeliculasTMDBResource {
         //console.log(url);
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(page), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+            qs:      PeliculasTMDBResource.requestParams(page), 
         }
         //console.log(options);
         return PeliculasTMDBResource.getRequest(url, options);
@@ -107,7 +107,7 @@ class PeliculasTMDBResource {
         //console.log(url);
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(page), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+            qs:      PeliculasTMDBResource.requestParams(page), 
         }
         //console.log(options);
         return PeliculasTMDBResource.getRequest(url, options);
@@ -119,7 +119,7 @@ class PeliculasTMDBResource {
         //console.log(url);
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(page), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+            qs:      PeliculasTMDBResource.requestParams(page), 
         }
         //console.log(options);
         return PeliculasTMDBResource.getRequest(url, options);
@@ -136,7 +136,7 @@ class PeliculasTMDBResource {
             qs:      PeliculasTMDBResource.requestParams("1"), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
         }
         //console.log(options);
-        return request.get(url, options);
+        return PeliculasTMDBResource.getRequest(url, options);
     }
 
     /* 
@@ -150,7 +150,7 @@ class PeliculasTMDBResource {
         qs:      PeliculasTMDBResource.requestParams("1"), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
     }
     //console.log(options);
-    return request.get(url, options);
+    return PeliculasTMDBResource.getRequest(url, options);
 }
 
     /*
@@ -165,7 +165,7 @@ class PeliculasTMDBResource {
         //const options = "?api_key=" + PeliculasTMDBResource.requestParams().api_key + "&language=es-ES&external_source=imdb_id";
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+            qs:      PeliculasTMDBResource.requestParams(), 
         }
         options.qs.external_source="imdb_id";
         const callback = (_, resp, body) => { if(resp) tmdbCache.set(imdbResourcePrefix + imdbId, body)}
@@ -185,7 +185,7 @@ class PeliculasTMDBResource {
         const callback = (_, resp, body) => { if(resp) tmdbCache.set(similaresPelisPrefix + filmId + "_" + page, body)}
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(page), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+            qs:      PeliculasTMDBResource.requestParams(page), 
         }
         return cachedResponse != undefined ? cachedResponse : PeliculasTMDBResource.getRequest(url, options, callback);
     }
@@ -203,7 +203,7 @@ class PeliculasTMDBResource {
         const callback = (_, resp, body) => { if(resp) tmdbCache.set(similaresSeriesPrefix + serieId + "_" + page, body)}
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(page), // -> uri + '?api_key=18268e82edbd92497a6d18853ddf8c57'
+            qs:      PeliculasTMDBResource.requestParams(page), 
         }
         return cachedResponse != undefined ? cachedResponse : PeliculasTMDBResource.getRequest(url, options, callback);
     }

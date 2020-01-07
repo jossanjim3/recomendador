@@ -12,7 +12,7 @@ class AuthenticateService {
     }
 
     static authenticateApi(url){
-        const urlAPI = "https://fis-backend-login.herokuapp.com/api/v1";
+        const urlAPI = "https://fis-api-gateway.herokuapp.com/api/v1";
         return urljoin(urlAPI, url);
     }
 

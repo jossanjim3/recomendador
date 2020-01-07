@@ -90,14 +90,19 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/aleatorio/peliculas/",
+							"raw": "{{host}}/aleatorio/peliculas?number=10",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"aleatorio",
-								"peliculas",
-								""
+								"peliculas"
+							],
+							"query": [
+								{
+									"key": "number",
+									"value": "10"
+								}
 							]
 						}
 					},
@@ -121,14 +126,19 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/aleatorio/series/8",
+							"raw": "{{host}}/aleatorio/series?number=8",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"aleatorio",
-								"series",
-								"8"
+								"series"
+							],
+							"query": [
+								{
+									"key": "number",
+									"value": "8"
+								}
 							]
 						}
 					},
@@ -435,19 +445,19 @@
 	],
 	"variable": [
 		{
-			"id": "9bee468b-3393-419f-88ba-dfe559ccacfc",
+			"id": "0741afc6-8971-4a44-ac77-ddab57be1a3a",
 			"key": "host",
 			"value": "http://recomendador-fis1920.herokuapp.com/recomendador/v1",
 			"type": "string"
 		},
 		{
-			"id": "c10c0c43-9c74-4904-a965-ce3498f1c79e",
+			"id": "9f20fb97-ae96-481d-bf5f-e56c045b47c2",
 			"key": "currentAccessToken ",
 			"value": "",
 			"type": "string"
 		},
 		{
-			"id": "35a73ba9-f11e-4b0b-8d5e-5947e663ea19",
+			"id": "d91eece7-45be-4a41-a02e-e2d5eebfe286",
 			"key": "accessTokenExpiry",
 			"value": "",
 			"type": "string"

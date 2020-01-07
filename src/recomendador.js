@@ -119,7 +119,7 @@ const NOT_RESPONDING_MSG = "Time-out: An external server is not responding";
 /**
  * @swagger
  * path:
- *  '/aleatorio/peliculas/{number}':
+ *  '/aleatorio/peliculas':
  *    get:
  *      tags:
  *        - aleatorio
@@ -128,9 +128,9 @@ const NOT_RESPONDING_MSG = "Time-out: An external server is not responding";
  *      operationId: getAleatorioPeliculas
  *      parameters:
  *        - name: number
- *          in: path
- *          description: 'nombre de peliculas que recomendar (optional, 5 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
- *          required: true
+ *          in: query
+ *          description: 'nombre de peliculas que recomendar (optional, 20 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
+ *          required: false
  *          schema:
  *            minimum: 1
  *            type: integer
@@ -163,52 +163,44 @@ const NOT_RESPONDING_MSG = "Time-out: An external server is not responding";
  *        - bearerAuth:
  *          - read
  */
-// Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) peliculas populares de TMDB
+// Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (20 por defecto) peliculas populares de TMDB
 // ruta postman: http://localhost:3000/recomendador/aleatorio/peliculas
-router.get("/aleatorio/peliculas/:number?", async (req, res) => {
-
-    // inicializo la variable cada vez que se llama a la api
-    let peliculasRet = [];
+router.get("/aleatorio/peliculas", async (req, res) => {
 
     console.log("");
     console.log("-------------");
     console.log(Date() + " - GET aleatorio peliculas TMDB")
     console.log("-------------");
     console.log("");
+
+    let peliculasRet = [];
     
     // numero de peliculas a devolver pasado por parametro
-    //var number = req.param('number'); // deprecated
-    //var number = req.params.number; // undefined
-    var number = req.query.number; // ?blablabla
-    console.log("number param url: " + number);
-    if (number == undefined){
-        number = 20;
-    } else {
-        number = 20; // por defecto en aleatorio va a devolver como minimo 20
+    var number = req.query.number || 20;
+    
+    var userId;
+    try {
+        userId = await retrieveUserLogin(req.headers['authorization'])
+    } catch(err) {
+        res.status(401);
+        res.send(UNAUTHORIZED_MSG);
+        return;
     }
     
     var page = 1; // por defecto trae la pagina numero 1
 
     // array de peliculas que sera devuelta al usuario
-
-    var userId;
-    try {
-        userId = await retrieveUserLogin(req.headers['authorization'])
-        console.log("userID recuperado: " + userId);
-    } catch(err) {
-        console.log("Error recuperar userID /aleatorio/peliculas/: " + err);
-        res.status(401);
-        res.send(UNAUTHORIZED_MSG);
-        return;
-    }
-    while(peliculasRet.length < number){
-
-        let peliculas = [];
-        peliculas = await obtenerPeliculasAleatoriasTmdb(page, number, userId);
+    let addedCount = 1;
+    while(peliculasRet.length < number && addedCount > 0) {
+        let actualCount = peliculasRet.length;
+        try {
+            peliculasRet = await obtenerPeliculasAleatoriasTmdb(peliculasRet, page, number, userId);
+        } catch(err) {
+            res.sendStatus(500);
+            return;
+        }
+        addedCount = peliculasRet.length - actualCount;
         page = page + 1;
-
-        peliculasRet = peliculasRet.concat(peliculas);
-
     }
 
     console.log("************* devuelvo array con " + peliculasRet.length + " peliculas!");
@@ -220,9 +212,8 @@ router.get("/aleatorio/peliculas/:number?", async (req, res) => {
  
 });
 
-async function obtenerPeliculasAleatoriasTmdb(page, number, userId){
+async function obtenerPeliculasAleatoriasTmdb(peliculasRet, page, number, userId){
     //if(mongoose.connection.readyState != 1) return false;
-    let peliculasRet = [];
 
     // devuelve la lista de peliculas aleatoria con buena puntuacion de la api de tmdb
     let peliculasTmdb
@@ -233,39 +224,34 @@ async function obtenerPeliculasAleatoriasTmdb(page, number, userId){
     }
     //console.log("total peliculasTmdb: " + peliculasTmdb.results.length);
 
-    /* console.log("");
+    console.log("");
     console.log("Recorremos array...");
-    console.log(""); */
+    console.log("");
 
     for (var pelicula of peliculasTmdb.results) {
-        //console.log("Pelicula Id: " + pelicula.id);
-      
+        console.log("Pelicula Id: " + pelicula.id);
         if(peliculasRet.length < number) {
             try {
                 // compruebo si esta en la lista negra
                 if(mongoose.connection.readyState != 1) {
                     peliculasRet.push(pelicula);
-                    //console.log("añado pelicula: " + pelicula.id);
+                    console.log("añado pelicula: " + pelicula.id);
 
                 } else {
                     const storedDataArray = await ListaNegraPelis.findOne({ 'idTmdb' : pelicula.id, 'idUsuario': userId });
-                    //console.log("esta en lista negra: " + storedDataArray);
+                    console.log("esta en lista negra: " + storedDataArray);
                     if (!storedDataArray){
                         // si no esta en la lista negra lo añado al array a devolver
                         peliculasRet.push(pelicula);
-                        //console.log("añado pelicula: " + pelicula.id);
+                        console.log("añado pelicula: " + pelicula.id);
                     } else{
-                        //console.log("no añado pelicula: " + pelicula.id);
+                        console.log("no añado pelicula: " + pelicula.id);
                     }
                 }
                 
-                //console.log("-------------");                
-            }
-            catch (err) {
-                if (err) {
-                    console.log("error: " + err);
-                    throw new Error(err.message);
-                }
+                console.log("-------------");
+            } catch(err) {
+                throw err;
             }
         }
 
@@ -277,7 +263,7 @@ async function obtenerPeliculasAleatoriasTmdb(page, number, userId){
 /**
  * @swagger
  * path:
- *   '/aleatorio/series/{number}':
+ *   '/aleatorio/series':
  *      get:
  *        tags:
  *          - aleatorio
@@ -286,9 +272,9 @@ async function obtenerPeliculasAleatoriasTmdb(page, number, userId){
  *        operationId: getAleatorioSeries
  *        parameters:
  *          - name: number
- *            in: path
- *            description: 'nombre de series que recomendar (optional, 5 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
- *            required: true
+ *            in: query
+ *            description: 'nombre de series que recomendar (optional, 20 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
+ *            required: false
  *            schema:
  *              type: integer
  *              format: int64
@@ -322,46 +308,43 @@ async function obtenerPeliculasAleatoriasTmdb(page, number, userId){
  */
 // Recomendador que devuelva aleatoriamente una lista de hasta NUMBER (5 por defecto) series
 // (las que tienes buena puntuacion)
-router.get("/aleatorio/series/:number?", async (req, res) => {
+router.get("/aleatorio/series", async (req, res) => {
     console.log("");
     console.log("-------------");
     console.log(Date() + " - GET aleatorio series TMDB")
     console.log("-------------");
     console.log("");
 
-    let seriesRet = []; // necesario para que siempre haya como minimo 20
+    let seriesRet = [];
 
     // numero de series a devolver pasado por parametro
-    //var number = req.param('number'); // deprecated
-    //var number = req.params.number; // undefined
-    var number = req.query.number; // ?blablabla
-    console.log("number param url: " + number);
-
-    if (number == undefined){
-        number = 20;
-    } else {
-        number = 20; // por defecto en aleatorio devuelve como minimo 20...
-    }
-
-    var page = 1; // por defecto trae la pagina numero 1
+    var number = req.query.number || 20;
+    console.log("number limit a devolver: " + number);
 
     var userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
-        console.log("userID recuperado /aleatorio/series: " + userId);
     } catch(err) {
-        console.log("Error recuperar userID: " + err);
         res.status(401);
         res.send(UNAUTHORIZED_MSG);
         return;
     }
+    
+    var page = 1; // por defecto trae la pagina numero 1
 
-    while(seriesRet.length < number){
-        let series = [];
-        series = await obtenerSeriesAleatoriasTmdb(page, number, userId);
+    // array de series que sera devuelta al usuario
+
+    let addedCount = 1;
+    while(seriesRet.length < number && addedCount > 0) {
+        let actualCount = seriesRet.length;
+        try {
+            seriesRet = await obtenerSeriesAleatoriasTmdb(seriesRet, page, number, userId);
+        } catch(err) {
+            res.sendStatus(500);
+            return;
+        }
+        addedCount = seriesRet.length - actualCount;
         page = page + 1;
-
-        seriesRet = seriesRet.concat(series);
     }
 
     console.log("************* devuelvo array con " + seriesRet.length + " series!");
@@ -371,9 +354,7 @@ router.get("/aleatorio/series/:number?", async (req, res) => {
     res.json({results : seriesRet});
 });
 
-async function obtenerSeriesAleatoriasTmdb(page, number, userId){
-
-    let seriesRet = [];
+async function obtenerSeriesAleatoriasTmdb(seriesRet, page, number, userId){
 
     // devuelve la lista de series aleatoria con buena puntuacion de la api de tmdb
     let seriesTmdb
@@ -384,34 +365,34 @@ async function obtenerSeriesAleatoriasTmdb(page, number, userId){
     }
     //console.log("total seriesTmdb: " + seriesTmdb.results.length);
 
-    /* console.log("");
+    console.log("");
     console.log("Recorremos array...");
-    console.log(""); */
+    console.log("");
 
     for (var serie of seriesTmdb.results) {
-        //console.log("Serie Id: " + serie.id);
+        console.log("Serie Id: " + serie.id);
         
         if(seriesRet.length < number) {
             try {
                 // compruebo si esta en la lista negra
                 if(mongoose.connection.readyState != 1) {
                     seriesRet.push(serie);
-                    //console.log("añado serie: " + serie.id);
+                    console.log("añado serie: " + serie.id);
 
                 } else {
                     const storedDataArray = await ListaNegraSeries.findOne({ 'idTmdb' : serie.id, 'idUsuario': userId });
-                    //console.log("esta en lista negra: " + storedDataArray);
+                    console.log("esta en lista negra: " + storedDataArray);
                     if (!storedDataArray){
                         // si no esta en la lista negra lo añado al array a devolver
                         seriesRet.push(serie);
-                        //console.log("añado serie: " + serie.id);
+                        console.log("añado serie: " + serie.id);
                     } else{
-                        //console.log("no añado serie: " + serie.id);
+                        console.log("no añado serie: " + serie.id);
                     }
                 }
                 
 
-                //console.log("-------------");
+                console.log("-------------");
 
                 // hago el break cuando lleve number series
                 // añado mas por si añade a la lista negra desde el front
@@ -445,7 +426,7 @@ function absQuadraticMean(sum, elementsNumber) {
 }
 
 async function retrieveUserLogin(token) {
-    if(token == null || (await authenticateService.checkToken(token)).trim() != "OK")
+    if(token == null || (await authenticateService.checkToken(token)).trim() != "OK")
         throw new Error("No authorization");
     token = token.replace('Bearer ', '');
     return jwt.decode(token).login;
@@ -707,10 +688,7 @@ router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
         res.send(UNAUTHORIZED_MSG);
         return;
     }
-
-    //var number = req.param('number'); // deprecated
-    //var number = req.params.number; // undefined
-    var number = req.query.number || 5; // ?blablabla
+    var number = req.params.number || 5;
     const ratings = await getAndFormatRatings(req.params.filmId);
     if(ratings != undefined) {
         const mainUserRatings = ratings.find(user => user.id == userId)
@@ -827,9 +805,7 @@ router.get("/porSimilitudes/serie/:serieId/:number?", async (req, res) => {
         return;
     }
     // /userId = "agusnez";
-    //var number = req.param('number'); // deprecated
-    //var number = req.params.number; // undefined
-    var number = req.query.number || 5; // ?blablabla
+    var number = req.params.number || 5;
     const ratings =  await getAndFormatRatings(req.params.serieId);
     if(ratings != undefined) {
         const mainUserRatings = ratings.find(user => user.id == userId)
@@ -866,12 +842,12 @@ router.get("/porSimilitudes/serie/:serieId/:number?", async (req, res) => {
 // LISTA NEGRA
 // --------------------------
 
-async function getResourceFromTmdbPelicula(idTmdb){
+async function getResourceFromTmdb(idTmdb){
     //console.log("id tmdb: " + idTmdb);
     try {
-        const movieData =  (await peliculasTMDBResource.getTmdbRessourceFromTmdbPelicula(idTmdb));
+        const movieData =  (await peliculasTMDBResource.getTmdbRessourceFromImdb(idTmdb)).movie_results[0];
         if(movieData !== null) {
-            //console.log("metodo recupera recurso de tmdb con id: " + movieData.id + ", " + movieData.original_title );
+            console.log("metodo recupera peli de tmdb con id: " + movieData );
             return movieData;
         }
     } catch (err) {
@@ -922,9 +898,7 @@ router.get("/listaNegra/peliculas", async (req, res) => {
     let userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
-        console.log("userID recuperado: " + userId);
     } catch(err) {
-        console.log("Error recuperar userID /listaNegra/peliculas: " + err);
         res.status(401);
         res.send(UNAUTHORIZED_MSG);
         return;
@@ -932,54 +906,26 @@ router.get("/listaNegra/peliculas", async (req, res) => {
     let listaNegraPelis = [];
 
     // como el filtro el vacio {} devuelve todos los elementos
-    ListaNegraPelis.find({"idUsuario": userId}, async (err, elementos) => {
+    ListaNegraPelis.find({"idUsuario": userId}, (err, elementos) => {
         if (err) {
             console.log(Date() + " - " + err);
             res.sendStatus(500);
         } else {
 
-            for (var elemento of elementos) {
-                //console.log("Elemento id a recuperar from tmdb: " + elemento.idTmdb);
-                try {
-                    var movieData = await getResourceFromTmdbPelicula(elemento.idTmdb);
-                    if(movieData !== null){
-                        var idTmdbResource = elemento.idTmdb;
-                        var nameTmdbResource = movieData.original_title;
-                        //console.log("name movie data: " + nameTmdbResource);
-                        var userName = userId;
-                        //listaNegraPelis.push(movieData);
-                        listaNegraPelis.push({
-                            idTmdb : idTmdbResource,
-                            name : nameTmdbResource,
-                            idUsuario : userName
-                        });
-                        //console.log("Peli recuperada de la lista negra con id: " + movieData.id)
-                    } else {
-                        /* elemento = elemento.cleanup();
-                        listaNegraPelis.push(elemento); */
-                        var idTmdbResource = elemento.idTmdb;
-                        var nameTmdbResource = "Unknown";
-                        var userName = userId;
-                        //listaNegraPelis.push(movieData);
-                        listaNegraPelis.push({
-                            idTmdb : idTmdbResource,
-                            name : nameTmdbResource,
-                            idUsuario : userName
-                        });
-                    }
-                } catch(err) {
-                    console.log("Error recuperar elementos de TMDB /listaNegra/peliculas: " + err);
-                    res.sendStatus(500);
-                    return;
+            /* for (var elemento of elementos) {
+                console.log("Elemento id a recuperar from tmdb: " + elemento.idTmdb);
+                const movieData =  getResourceFromTmdb(elemento.idTmdb);
+                if(movieData !== null){
+                    listaNegraPelis.push(movieData);
+                    //console.log("Peli recuperada de la lista negra con id: " + movieData.id)
                 }
-                
-            }       
+            }   */        
             
-            /* // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
+            // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
             elementos.map((elemento) => {
                 elemento = elemento.cleanup();
                 listaNegraPelis.push(elemento);
-            }); */
+            });
 
             console.log("Lista negra numero peliculas: " + listaNegraPelis.length);
             res.status(200); // 200 ok
@@ -987,24 +933,6 @@ router.get("/listaNegra/peliculas", async (req, res) => {
         }
     });
 });
-
-
-async function getResourceFromTmdbSerie(idTmdb){
-    //console.log("id tmdb: " + idTmdb);
-    try {
-        const movieData =  (await peliculasTMDBResource.getTmdbRessourceFromTmdbSerie(idTmdb));
-        if(movieData !== null) {
-            //console.log("metodo recupera recurso de tmdb con id: " + movieData.id + ", " + movieData.original_title );
-            return movieData;
-        }
-    } catch (err) {
-        if (err) {
-            console.log("Error: " + err);
-            return null;
-        }
-    }
-    return null;
-}
 
 /**
  * @swagger
@@ -1046,9 +974,7 @@ router.get("/listaNegra/series", async (req, res) => {
     let userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
-        console.log("userID recuperado: " + userId);
     } catch(err) {
-        console.log("Error recuperar userID /listaNegra/series: " + err);
         res.status(401);
         res.send(UNAUTHORIZED_MSG);
         return;
@@ -1057,55 +983,16 @@ router.get("/listaNegra/series", async (req, res) => {
     let listaNegraSeries = [];
 
     // como el filtro el vacio {} devuelve todos los elementos
-    ListaNegraSeries.find({"idUsuario": userId}, async (err, elementos) => {
+    ListaNegraSeries.find({"idUsuario": userId}, (err, elementos) => {
         if (err) {
             console.log(Date() + " - " + err);
             res.sendStatus(500);
-            
         } else {
-
-            for (var elemento of elementos) {
-                //console.log("Elemento id a recuperar from tmdb: " + elemento.idTmdb);
-                try {
-                    var movieData = await getResourceFromTmdbSerie(elemento.idTmdb);
-                    if(movieData !== null){
-                        var idTmdbResource = elemento.idTmdb;
-                        var nameTmdbResource = movieData.name;
-                        //console.log("name movie data: " + nameTmdbResource);
-                        var userName = userId;
-                        //listaNegraSeries.push(movieData);
-                        listaNegraSeries.push({
-                            idTmdb : idTmdbResource,
-                            name : nameTmdbResource,
-                            idUsuario : userName
-                        });
-                        //console.log("Peli recuperada de la lista negra con id: " + movieData.id)
-                    } else {
-                        /* elemento = elemento.cleanup();
-                        listaNegraSeries.push(elemento); */
-                        var idTmdbResource = elemento.idTmdb;
-                        var nameTmdbResource = "Unknown";
-                        var userName = userId;
-                        //listaNegraPelis.push(movieData);
-                        listaNegraSeries.push({
-                            idTmdb : idTmdbResource,
-                            name : nameTmdbResource,
-                            idUsuario : userName
-                        });
-                    }
-                } catch(err) {
-                    console.log("Error recuperar elementos de TMDB /listaNegra/peliculas: " + err);
-                    res.sendStatus(500);
-                    return;
-                }
-                
-            }
-
-            /* // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
+            // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
             elementos.map((elemento) => {
                 elemento = elemento.cleanup();
                 listaNegraSeries.push(elemento);
-            }); */
+            });
 
             console.log("Lista negra numero series: " + listaNegraSeries.length);
             res.status(200); // 200 ok
@@ -1166,9 +1053,7 @@ router.post("/listaNegra/pelicula/:peliculaId", async (req, res) => {
     let userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
-        console.log("userID recuperado: " + userId);
     } catch(err) {
-        console.log("Error recuperar userID: " + err);
         res.status(401);
         res.send(UNAUTHORIZED_MSG);
         return;
@@ -1256,9 +1141,7 @@ router.post("/listaNegra/serie/:serieId", async (req, res) => {
     let userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
-        console.log("userID recuperado: " + userId);
     } catch(err) {
-        console.log("Error recuperar userID: " + err);
         res.status(401);
         res.send(UNAUTHORIZED_MSG);
         return;
@@ -1440,4 +1323,4 @@ router.delete("/listaNegra/serie/:serieId", async (req, res) => {
 // LISTA NEGRA
 // --------------------------
 
-module.exports = { router, retrieveUserLogin, getAndFormatRatings, substractCommonRates, sortProcessedUser, getMoviesAndSeriesSet, checkMovies, checkSeries, obtenerPeliculasAleatoriasTmdb, obtenerSeriesAleatoriasTmdb };
+module.exports = { router, retrieveUserLogin, getAndFormatRatings, substractCommonRates, sortProcessedUser, getMoviesAndSeriesSet, checkMovies, checkSeries, obtenerPeliculasAleatoriasTmdb, obtenerSeriesAleatoriasTmdb };

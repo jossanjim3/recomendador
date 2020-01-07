@@ -9,8 +9,6 @@ const obtenerSeriesAleatoriasTmdb = require('../src/recomendador').obtenerSeries
 const API_KEY = '?api_key=18268e82edbd92497a6d18853ddf8c57';
 const LANGUAGE = "&language=es-ES";
 const PAGE = "&page=1"
-const EXT_SOURCE = "&external_source=imdb_id";
-const AUTHENTIFICATION_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluIiwiaWF0IjoxNTc3OTg5MzgwLCJleHAiOjE1Nzc5OTI5ODB9.8HQaMFCpyvdpd4csrvnwv5PkMkrmPu_zg5rSq119xbY";
 
 function mockPeliculasSet1() {
     nock('https://api.themoviedb.org/3/movie')
