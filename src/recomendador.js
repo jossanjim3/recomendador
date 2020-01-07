@@ -108,6 +108,8 @@ const NOT_RESPONDING_MSG = "Time-out: An external server is not responding";
  *          properties:
  *            idTmdb:
  *              type: integer
+ *            name:
+ *              type: string
  *            idUsuario:
  *              type: string
  */
@@ -859,6 +861,21 @@ async function getResourceFromTmdb(idTmdb){
     return null;
 }
 
+async function getResourceFromTmdbPelicula(idTmdb){
+    try {
+        const movieData =  (await peliculasTMDBResource.getTmdbRessourceFromTmdbPelicula(idTmdb));
+        if(movieData !== null) {
+            return movieData;
+        }
+    } catch (err) {
+        if (err) {
+            console.log("Error: " + err);
+            return null;
+        }
+    }
+    return null;
+}
+
 /**
  * @swagger
  * path:
@@ -898,7 +915,9 @@ router.get("/listaNegra/peliculas", async (req, res) => {
     let userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
+        console.log("userID recuperado: " + userId);
     } catch(err) {
+        console.log("Error recuperar userID /listaNegra/peliculas: " + err);
         res.status(401);
         res.send(UNAUTHORIZED_MSG);
         return;
@@ -906,26 +925,48 @@ router.get("/listaNegra/peliculas", async (req, res) => {
     let listaNegraPelis = [];
 
     // como el filtro el vacio {} devuelve todos los elementos
-    ListaNegraPelis.find({"idUsuario": userId}, (err, elementos) => {
+    ListaNegraPelis.find({"idUsuario": userId}, async (err, elementos) => {
         if (err) {
             console.log(Date() + " - " + err);
             res.sendStatus(500);
         } else {
 
-            /* for (var elemento of elementos) {
-                console.log("Elemento id a recuperar from tmdb: " + elemento.idTmdb);
-                const movieData =  getResourceFromTmdb(elemento.idTmdb);
-                if(movieData !== null){
-                    listaNegraPelis.push(movieData);
-                    //console.log("Peli recuperada de la lista negra con id: " + movieData.id)
+            for (var elemento of elementos) {
+                //console.log("Elemento id a recuperar from tmdb: " + elemento.idTmdb);
+                try {
+                    var movieData = await getResourceFromTmdbPelicula(elemento.idTmdb);
+                    if(movieData !== null){
+                        var idTmdbResource = elemento.idTmdb;
+                        var nameTmdbResource = movieData.original_title;
+                        var userName = userId;
+                        listaNegraPelis.push({
+                            idTmdb : idTmdbResource,
+                            name : nameTmdbResource,
+                            idUsuario : userName
+                        });
+                    } else {
+                        var idTmdbResource = elemento.idTmdb;
+                        var nameTmdbResource = "Unknown";
+                        var userName = userId;
+                        listaNegraPelis.push({
+                            idTmdb : idTmdbResource,
+                            name : nameTmdbResource,
+                            idUsuario : userName
+                        });
+                    }
+                } catch(err) {
+                    console.log("Error recuperar elementos de TMDB /listaNegra/peliculas: " + err);
+                    res.sendStatus(500);
+                    return;
                 }
-            }   */        
+                
+            }       
             
-            // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
+            /* // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
             elementos.map((elemento) => {
                 elemento = elemento.cleanup();
                 listaNegraPelis.push(elemento);
-            });
+            }); */
 
             console.log("Lista negra numero peliculas: " + listaNegraPelis.length);
             res.status(200); // 200 ok
@@ -933,6 +974,24 @@ router.get("/listaNegra/peliculas", async (req, res) => {
         }
     });
 });
+
+
+async function getResourceFromTmdbSerie(idTmdb){
+    //console.log("id tmdb: " + idTmdb);
+    try {
+        const movieData =  (await peliculasTMDBResource.getTmdbRessourceFromTmdbSerie(idTmdb));
+        if(movieData !== null) {
+            //console.log("metodo recupera recurso de tmdb con id: " + movieData.id + ", " + movieData.original_title );
+            return movieData;
+        }
+    } catch (err) {
+        if (err) {
+            console.log("Error: " + err);
+            return null;
+        }
+    }
+    return null;
+}
 
 /**
  * @swagger
@@ -974,7 +1033,9 @@ router.get("/listaNegra/series", async (req, res) => {
     let userId;
     try {
         userId = await retrieveUserLogin(req.headers['authorization'])
+        console.log("userID recuperado: " + userId);
     } catch(err) {
+        console.log("Error recuperar userID /listaNegra/series: " + err);
         res.status(401);
         res.send(UNAUTHORIZED_MSG);
         return;
@@ -983,16 +1044,55 @@ router.get("/listaNegra/series", async (req, res) => {
     let listaNegraSeries = [];
 
     // como el filtro el vacio {} devuelve todos los elementos
-    ListaNegraSeries.find({"idUsuario": userId}, (err, elementos) => {
+    ListaNegraSeries.find({"idUsuario": userId}, async (err, elementos) => {
         if (err) {
             console.log(Date() + " - " + err);
             res.sendStatus(500);
+            
         } else {
-            // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
+
+            for (var elemento of elementos) {
+                //console.log("Elemento id a recuperar from tmdb: " + elemento.idTmdb);
+                try {
+                    var movieData = await getResourceFromTmdbSerie(elemento.idTmdb);
+                    if(movieData !== null){
+                        var idTmdbResource = elemento.idTmdb;
+                        var nameTmdbResource = movieData.name;
+                        //console.log("name movie data: " + nameTmdbResource);
+                        var userName = userId;
+                        //listaNegraSeries.push(movieData);
+                        listaNegraSeries.push({
+                            idTmdb : idTmdbResource,
+                            name : nameTmdbResource,
+                            idUsuario : userName
+                        });
+                        //console.log("Peli recuperada de la lista negra con id: " + movieData.id)
+                    } else {
+                        /* elemento = elemento.cleanup();
+                        listaNegraSeries.push(elemento); */
+                        var idTmdbResource = elemento.idTmdb;
+                        var nameTmdbResource = "Unknown";
+                        var userName = userId;
+                        //listaNegraPelis.push(movieData);
+                        listaNegraSeries.push({
+                            idTmdb : idTmdbResource,
+                            name : nameTmdbResource,
+                            idUsuario : userName
+                        });
+                    }
+                } catch(err) {
+                    console.log("Error recuperar elementos de TMDB /listaNegra/peliculas: " + err);
+                    res.sendStatus(500);
+                    return;
+                }
+                
+            }
+
+            /* // elimina el elemento _id de la lista de los contactos que no queremos que aparezca
             elementos.map((elemento) => {
                 elemento = elemento.cleanup();
                 listaNegraSeries.push(elemento);
-            });
+            }); */
 
             console.log("Lista negra numero series: " + listaNegraSeries.length);
             res.status(200); // 200 ok
