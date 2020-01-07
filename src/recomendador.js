@@ -623,9 +623,9 @@ async function estaEnListaNegraSeries(ressource, userId) {
  *           schema:
  *             type: string
  *         - name: number
- *           in: path
+ *           in: query
  *           description: 'nombre de peliculas que recomendar (optional, 5 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
- *           required: true
+ *           required: false
  *           schema:
  *             minimum: 1
  *             type: integer
@@ -676,7 +676,7 @@ async function estaEnListaNegraSeries(ressource, userId) {
 // devuelve una lista de hasta NUMBER películas (5 por defecto), de similar categorías que otros usuarios han puntuado 
 // sobre una película puntuada. La eleccion de estas peliculas se hace frente a las similaritudes 
 // de notacion del usuario con las notas de los otos usuarios.
-router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
+router.get("/porSimilitudes/pelicula/:filmId", async (req, res) => {
     console.log("");
     console.log("-------------");
     console.log(Date() + " - GET por similitudes peliculas")
@@ -690,7 +690,7 @@ router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
         res.send(UNAUTHORIZED_MSG);
         return;
     }
-    var number = req.params.number || 5;
+    var number = req.query.number || 5;
     const ratings = await getAndFormatRatings(req.params.filmId);
     if(ratings != undefined) {
         const mainUserRatings = ratings.find(user => user.id == userId)
@@ -739,9 +739,9 @@ router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
  *           schema:
  *             type: string
  *         - name: number
- *           in: path
+ *           in: query
  *           description: 'nombre de series que recomendar (optional, 5 por defecto). Si se recommando menos de 1, se devuelve una lista vacía'
- *           required: true
+ *           required: false
  *           schema:
  *             minimum: 1
  *             type: integer
@@ -792,7 +792,7 @@ router.get("/porSimilitudes/pelicula/:filmId/:number?", async (req, res) => {
 // devuelve una lista de hasta NUMBER series  (5 por defecto), de similar categorías que otros usuarios han 
 // puntuado sobre una película puntuada. La eleccion de estas peliculas, o series, se hace frente a 
 // las similaritudes de notacion del usuario con las notas de los otos usuarios.
-router.get("/porSimilitudes/serie/:serieId/:number?", async (req, res) => {
+router.get("/porSimilitudes/serie/:serieId", async (req, res) => {
     console.log("");
     console.log("-------------");
     console.log(Date() + " - GET por similitudes series")
@@ -807,7 +807,7 @@ router.get("/porSimilitudes/serie/:serieId/:number?", async (req, res) => {
         return;
     }
     // /userId = "agusnez";
-    var number = req.params.number || 5;
+    var number = req.query.number || 5;
     const ratings =  await getAndFormatRatings(req.params.serieId);
     if(ratings != undefined) {
         const mainUserRatings = ratings.find(user => user.id == userId)
