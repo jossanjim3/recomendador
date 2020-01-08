@@ -26,15 +26,20 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/porSimilitudes/pelicula/tt0816692/12",
+							"raw": "{{host}}/porSimilitudes/pelicula/tt0816692?number=12",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"porSimilitudes",
 								"pelicula",
-								"tt0816692",
-								"12"
+								"tt0816692"
+							],
+							"query": [
+								{
+									"key": "number",
+									"value": "12"
+								}
 							]
 						}
 					},
@@ -58,15 +63,20 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/porSimilitudes/serie/tt0903747/7",
+							"raw": "{{host}}/porSimilitudes/serie/tt0903747?number=7",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"porSimilitudes",
 								"serie",
-								"tt0903747",
-								"7"
+								"tt0903747"
+							],
+							"query": [
+								{
+									"key": "number",
+									"value": "7"
+								}
 							]
 						}
 					},
@@ -390,7 +400,7 @@
 				"type": "text/javascript",
 				"exec": [
 					"const echoPostRequest = {",
-					"  url: 'https://fis-backend-login.herokuapp.com/api/v1/authenticate',",
+					"  url: 'https://fis-api-gateway.herokuapp.com/api/v1/authenticate',",
 					"  method: 'POST',",
 					"  header: 'Content-Type:application/json',",
 					"  body: {",
@@ -445,19 +455,19 @@
 	],
 	"variable": [
 		{
-			"id": "0741afc6-8971-4a44-ac77-ddab57be1a3a",
+			"id": "376a41af-5ff9-4dae-89d7-7260593a409f",
 			"key": "host",
 			"value": "http://recomendador-fis1920.herokuapp.com/recomendador/v1",
 			"type": "string"
 		},
 		{
-			"id": "9f20fb97-ae96-481d-bf5f-e56c045b47c2",
+			"id": "dd051416-da70-4fc8-89cd-92bdbc4a8c74",
 			"key": "currentAccessToken ",
 			"value": "",
 			"type": "string"
 		},
 		{
-			"id": "d91eece7-45be-4a41-a02e-e2d5eebfe286",
+			"id": "2c135ffa-cb73-4930-8f87-2c40f2d31e0a",
 			"key": "accessTokenExpiry",
 			"value": "",
 			"type": "string"
