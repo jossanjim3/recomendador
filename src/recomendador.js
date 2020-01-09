@@ -605,7 +605,7 @@ async function estaEnListaNegraSeries(ressource, userId) {
 /**
  * @swagger
  * path:
- *  '/porSimilitudes/pelicula/{filmId}/{number}':
+ *  '/porSimilitudes/pelicula/{filmId}':
  *     get:
  *       tags:
  *         - similitudes
@@ -721,7 +721,7 @@ router.get("/porSimilitudes/pelicula/:filmId", async (req, res) => {
 /**
  * @swagger
  * path:
- *  '/porSimilitudes/serie/{serieId}/{number}':
+ *  '/porSimilitudes/serie/{serieId}':
  *     get:
  *       tags:
  *         - similitudes

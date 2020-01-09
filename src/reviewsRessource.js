@@ -17,15 +17,11 @@ class ReviewsRessource {
     }
 
     static requestHeaders(){
-        
+        return {}
     }
 
     static requestParams(){
-        //const tmdbKey = (process.env.TMBD_KEY || '18268e82edbd92497a6d18853ddf8c57');
-
-        return {
-            //api_key : tmdbKey
-        }
+        return {}
     }
 
     static getAllReviewsByUser() {
