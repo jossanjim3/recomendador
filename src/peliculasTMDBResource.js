@@ -6,7 +6,6 @@ var serviceCommand = CommandsFactory.getOrCreate("TMDB").run(request).build();
 
 const NodeCache = require( "node-cache" );
 const tmdbCache = new NodeCache( { stdTTL: 60, checkperiod: 10, useClones: false } );
-const imdbResourcePrefix = "imdb_";
 const similaresPelisPrefix = "similares_pelis_";
 const similaresSeriesPrefix = "similares_series_";
 
@@ -17,25 +16,18 @@ class PeliculasTMDBResource {
         return promise;
     }
 
-    static imdbResource(url){
-        const urlAPI = "https://api.themoviedb.org/3/find";
-        const peliculasServer = (process.env.FIND_URL || urlAPI);
-
-        return urljoin(peliculasServer, url);
-    }    
-
     static tmdbResourcePelicula(url){
         const urlAPI = "https://api.themoviedb.org/3/movie";
-        const imdbResource = (process.env.PELICULAS_URL || urlAPI);
+        const tmdbResource = (process.env.PELICULAS_URL || urlAPI);
 
-        return urljoin(imdbResource, url);
+        return urljoin(tmdbResource, url);
     }
 
     static tmdbResourceSerie(url){
         const urlAPI = "https://api.themoviedb.org/3/tv";
-        const imdbResource = (process.env.SERIES_URL || urlAPI);
+        const tmdbResource = (process.env.SERIES_URL || urlAPI);
 
-        return urljoin(imdbResource, url);
+        return urljoin(tmdbResource, url);
     }
 
     static requestHeaders(){
@@ -105,8 +97,8 @@ class PeliculasTMDBResource {
     /* 
         Devuelve la pelicula de TMDB a partir de id pasado por parametro
     */
-    static getTmdbRessourceFromTmdbPelicula(imdbId){        
-        const url = PeliculasTMDBResource.tmdbResourcePelicula("/" + imdbId);
+    static getTmdbRessourceFromTmdbPelicula(tmdbId){        
+        const url = PeliculasTMDBResource.tmdbResourcePelicula("/" + tmdbId);
         //console.log(url);
         const options = {
             headers: PeliculasTMDBResource.requestHeaders(),
@@ -119,8 +111,8 @@ class PeliculasTMDBResource {
     /* 
         Devuelve la serie de TMDB a partir de id pasado por parametro
     */
-   static getTmdbRessourceFromTmdbSerie(imdbId){        
-    const url = PeliculasTMDBResource.tmdbResourceSerie("/" + imdbId);
+   static getTmdbRessourceFromTmdbSerie(tmdbId){        
+    const url = PeliculasTMDBResource.tmdbResourceSerie("/" + tmdbId);
     //console.log(url);
     const options = {
         headers: PeliculasTMDBResource.requestHeaders(),
@@ -129,25 +121,6 @@ class PeliculasTMDBResource {
     //console.log(options);
     return PeliculasTMDBResource.getRequest(url, options);
 }
-
-    /*
-        Devuelve el promise de la peticion de un recurso de tmdb identificado por un id imdb (o el recurso si se llama la funcion con await).
-        El recurso se recupera por la api de tmdb o por el cache si el recurso fue recuperado hace poco.
-        Si se devuelve el recurso por el cache, se devuelve la referencia original y no una copia,
-        asi deberias hacer una copia si quieres modificar los resultados
-    */
-    static getTmdbRessourceFromImdb(imdbId){
-        let cachedResponse = tmdbCache.get(imdbResourcePrefix + imdbId);
-        const url = PeliculasTMDBResource.imdbResource("/" + imdbId);
-        //const options = "?api_key=" + PeliculasTMDBResource.requestParams().api_key + "&language=es-ES&external_source=imdb_id";
-        const options = {
-            headers: PeliculasTMDBResource.requestHeaders(),
-            qs:      PeliculasTMDBResource.requestParams(), 
-        }
-        options.qs.external_source="imdb_id";
-        const callback = (_, resp, body) => { if(resp) tmdbCache.set(imdbResourcePrefix + imdbId, body)}
-        return cachedResponse != undefined ? cachedResponse : PeliculasTMDBResource.getRequest(url, options, callback);
-    }
 
     /*
         Devuelve el promise de la peticion de peliculas similares a una pelicula de tmdb identificada por su id tmdb (o el recurso si se llama la funcion con await).

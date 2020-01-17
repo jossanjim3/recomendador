@@ -22,7 +22,7 @@ const BM_ID = "tt2085059";
 const C_ID = "tt7366338";
 const I_ID = "tt0816692";
 const G_ID = "tt1454468";
-const TMDB_G_ID = "49047";
+const G_ID_2 = "49047";
 
 const namesToReviewsNumber = new Map([
     ["piegir" , 2],
@@ -42,7 +42,6 @@ const checkSeries = require('../src/recomendador').checkSeries;
 
 const API_KEY = '?api_key=18268e82edbd92497a6d18853ddf8c57';
 const LANGUAGE = "&language=es-ES";
-const EXT_SOURCE = "&external_source=imdb_id";
 const AUTHENTIFICATION_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dpbiI6ImFkbWluIiwiaWF0IjoxNTc3OTg5MzgwLCJleHAiOjE1Nzc5OTI5ODB9.8HQaMFCpyvdpd4csrvnwv5PkMkrmPu_zg5rSq119xbY";
 
 function mockCheckToken() {
@@ -70,32 +69,32 @@ function mockReviewsSet3() {
 }
 
 function mockReviewsRessources() {
-    nock('https://api.themoviedb.org/3/find')
-            .get('/' + N_ID + API_KEY + LANGUAGE + EXT_SOURCE)
+    nock('https://api.themoviedb.org/3/tv')
+            .get('/' + N_ID + API_KEY + LANGUAGE)
             .reply(200, narcosData);
-    nock('https://api.themoviedb.org/3/find')
-            .get('/' + LCADP_ID + API_KEY + LANGUAGE + EXT_SOURCE)
+    nock('https://api.themoviedb.org/3/tv')
+            .get('/' + LCADP_ID + API_KEY + LANGUAGE)
             .reply(200, laCasaDePapelData);
-    nock('https://api.themoviedb.org/3/find')
-            .get('/' + TWD_ID + API_KEY + LANGUAGE + EXT_SOURCE)
+    nock('https://api.themoviedb.org/3/tv')
+            .get('/' + TWD_ID + API_KEY + LANGUAGE)
             .reply(200, theWalkingDeadData);
-    nock('https://api.themoviedb.org/3/find')
-            .get('/' + BB_ID + API_KEY + LANGUAGE + EXT_SOURCE)
+    nock('https://api.themoviedb.org/3/tv')
+            .get('/' + BB_ID + API_KEY + LANGUAGE)
             .reply(200, breakingBadData);
-     nock('https://api.themoviedb.org/3/find')
-            .get('/' + BM_ID + API_KEY + LANGUAGE + EXT_SOURCE)
+     nock('https://api.themoviedb.org/3/tv')
+            .get('/' + BM_ID + API_KEY + LANGUAGE)
             .reply(200, blackMirrorData);
-    nock('https://api.themoviedb.org/3/find')
-            .get('/' + C_ID + API_KEY + LANGUAGE + EXT_SOURCE)
+    nock('https://api.themoviedb.org/3/tv')
+            .get('/' + C_ID + API_KEY + LANGUAGE)
             .reply(200, chernobylData);
-    nock('https://api.themoviedb.org/3/find')
-            .get('/' + I_ID + API_KEY + LANGUAGE + EXT_SOURCE)
+    nock('https://api.themoviedb.org/3/movie')
+            .get('/' + I_ID + API_KEY + LANGUAGE)
             .reply(200, interstellarData);
-    nock('https://api.themoviedb.org/3/find')
-            .get('/' + G_ID + API_KEY + LANGUAGE + EXT_SOURCE)
+    nock('https://api.themoviedb.org/3/movie')
+            .get('/' + G_ID + API_KEY + LANGUAGE)
             .reply(200, gravityData);
     nock('https://api.themoviedb.org/3/movie')
-            .get('/' + TMDB_G_ID + "/similar" + API_KEY + LANGUAGE + "&page=1")
+            .get('/' + G_ID_2 + "/similar" + API_KEY + LANGUAGE + "&page=1")
             .reply(200, gravityPelisSimilares);    
 }
 

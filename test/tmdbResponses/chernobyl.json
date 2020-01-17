@@ -1,27 +1,19 @@
 {
-    "movie_results": [],
-    "person_results": [],
-    "tv_results": [
-      {
-        "original_name": "Chernobyl",
-        "id": 87108,
-        "name": "Chernobyl",
-        "vote_count": 706,
-        "vote_average": 8.6,
-        "first_air_date": "2019-05-06",
-        "poster_path": "/hlLXt2tOPT6RRnjiUmoxyG1LTFi.jpg",
-        "genre_ids": [
-          18
-        ],
-        "original_language": "en",
-        "backdrop_path": "/cDpR6URVghK5LC7G7NgPkCP8x6E.jpg",
-        "overview": "The true story of one of the worst man-made catastrophes in history: the catastrophic nuclear accident at Chernobyl. A tale of the brave men and women who sacrificed to save Europe from unimaginable disaster.",
-        "origin_country": [
-          "US"
-        ],
-        "popularity": 44.646
-      }
-    ],
-    "tv_episode_results": [],
-    "tv_season_results": []
-  }
+  "original_name": "Chernobyl",
+  "id": 87108,
+  "name": "Chernobyl",
+  "vote_count": 706,
+  "vote_average": 8.6,
+  "first_air_date": "2019-05-06",
+  "poster_path": "/hlLXt2tOPT6RRnjiUmoxyG1LTFi.jpg",
+  "genre_ids": [
+    18
+  ],
+  "original_language": "en",
+  "backdrop_path": "/cDpR6URVghK5LC7G7NgPkCP8x6E.jpg",
+  "overview": "The true story of one of the worst man-made catastrophes in history: the catastrophic nuclear accident at Chernobyl. A tale of the brave men and women who sacrificed to save Europe from unimaginable disaster.",
+  "origin_country": [
+    "US"
+  ],
+  "popularity": 44.646
+}
