@@ -86,14 +86,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/porSimilitudes/pelicula/tt0816692?number=12",
+							"raw": "{{host}}/porSimilitudes/pelicula/157336?number=12",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"porSimilitudes",
 								"pelicula",
-								"tt0816692"
+								"157336"
 							],
 							"query": [
 								{
@@ -181,14 +181,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/porSimilitudes/serie/tt0903747?number=7",
+							"raw": "{{host}}/porSimilitudes/serie/1396?number=7",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"porSimilitudes",
 								"serie",
-								"tt0903747"
+								"1396"
 							],
 							"query": [
 								{

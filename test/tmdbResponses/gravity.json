@@ -1,28 +1,20 @@
 {
-    "movie_results": [
-      {
-        "id": 49047,
-        "video": false,
-        "vote_count": 10337,
-        "vote_average": 7.2,
-        "title": "Gravity",
-        "release_date": "2013-10-03",
-        "original_language": "en",
-        "original_title": "Gravity",
-        "genre_ids": [
-          18,
-          878,
-          53
-        ],
-        "backdrop_path": "/9aoWzwOwy9NLuSk9LkBwwrBdPYM.jpg",
-        "adult": false,
-        "overview": "Dr. Ryan Stone, a brilliant medical engineer on her first Shuttle mission, with veteran astronaut Matt Kowalsky in command of his last flight before retiring. But on a seemingly routine spacewalk, disaster strikes. The Shuttle is destroyed, leaving Stone and Kowalsky completely alone-tethered to nothing but each other and spiraling out into the blackness of space. The deafening silence tells them they have lost any link to Earth and any chance for rescue. As fear turns to panic, every gulp of air eats away at what little oxygen is left. But the only way home may be to go further out into the terrifying expanse of space.",
-        "poster_path": "/uPxtxhB2Fy9ihVqtBtNGHmknJqV.jpg",
-        "popularity": 22.125
-      }
-    ],
-    "person_results": [],
-    "tv_results": [],
-    "tv_episode_results": [],
-    "tv_season_results": []
+  "id": 49047,
+  "video": false,
+  "vote_count": 10337,
+  "vote_average": 7.2,
+  "title": "Gravity",
+  "release_date": "2013-10-03",
+  "original_language": "en",
+  "original_title": "Gravity",
+  "genre_ids": [
+    18,
+    878,
+    53
+  ],
+  "backdrop_path": "/9aoWzwOwy9NLuSk9LkBwwrBdPYM.jpg",
+  "adult": false,
+  "overview": "Dr. Ryan Stone, a brilliant medical engineer on her first Shuttle mission, with veteran astronaut Matt Kowalsky in command of his last flight before retiring. But on a seemingly routine spacewalk, disaster strikes. The Shuttle is destroyed, leaving Stone and Kowalsky completely alone-tethered to nothing but each other and spiraling out into the blackness of space. The deafening silence tells them they have lost any link to Earth and any chance for rescue. As fear turns to panic, every gulp of air eats away at what little oxygen is left. But the only way home may be to go further out into the terrifying expanse of space.",
+  "poster_path": "/uPxtxhB2Fy9ihVqtBtNGHmknJqV.jpg",
+  "popularity": 22.125
 }

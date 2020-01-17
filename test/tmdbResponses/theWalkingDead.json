@@ -1,29 +1,21 @@
 {
-    "movie_results": [],
-    "person_results": [],
-    "tv_results": [
-      {
-        "original_name": "The Walking Dead",
-        "id": 1402,
-        "name": "The Walking Dead",
-        "vote_count": 4422,
-        "vote_average": 7.3,
-        "first_air_date": "2010-10-31",
-        "poster_path": "/reKs8y4mPwPkZG99ZpbKRhBPKsX.jpg",
-        "genre_ids": [
-          18,
-          10759,
-          10765
-        ],
-        "original_language": "en",
-        "backdrop_path": "/wXXaPMgrv96NkH8KD1TMdS2d7iq.jpg",
-        "overview": "Sheriff's deputy Rick Grimes awakens from a coma to find a post-apocalyptic world dominated by flesh-eating zombies. He sets out to find his family and encounters many other survivors along the way.",
-        "origin_country": [
-          "US"
-        ],
-        "popularity": 96.232
-      }
-    ],
-    "tv_episode_results": [],
-    "tv_season_results": []
+  "original_name": "The Walking Dead",
+  "id": 1402,
+  "name": "The Walking Dead",
+  "vote_count": 4422,
+  "vote_average": 7.3,
+  "first_air_date": "2010-10-31",
+  "poster_path": "/reKs8y4mPwPkZG99ZpbKRhBPKsX.jpg",
+  "genre_ids": [
+    18,
+    10759,
+    10765
+  ],
+  "original_language": "en",
+  "backdrop_path": "/wXXaPMgrv96NkH8KD1TMdS2d7iq.jpg",
+  "overview": "Sheriff's deputy Rick Grimes awakens from a coma to find a post-apocalyptic world dominated by flesh-eating zombies. He sets out to find his family and encounters many other survivors along the way.",
+  "origin_country": [
+    "US"
+  ],
+  "popularity": 96.232
 }

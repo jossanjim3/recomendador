@@ -491,7 +491,7 @@ function getMoviesAndSeriesSet(sortedRatings, mainUserRatings) {
 async function checkMovies(moviesGlobalSetIds, mainFilmId, userId, number) {
     const moviesFilteredSet = [];
     try {
-        const mainMovieData = (await peliculasTMDBResource.getTmdbRessourceFromImdb(mainFilmId)).movie_results[0];
+        const mainMovieData = (await peliculasTMDBResource.getTmdbRessourceFromTmdbPelicula(mainFilmId));
         if(mainMovieData == null) {
             return [];
         }
@@ -500,7 +500,7 @@ async function checkMovies(moviesGlobalSetIds, mainFilmId, userId, number) {
             try {
                 // Verifica que ya no esta añadido
                 if(!moviesFilteredSet.find(movieSet => movie.imdbId == movieSet.imdbId)) {
-                    const movieData =  (await peliculasTMDBResource.getTmdbRessourceFromImdb(movie.imdbId)).movie_results[0];
+                    const movieData =  (await peliculasTMDBResource.getTmdbRessourceFromTmdbPelicula(movie.imdbId));
                     if(movieData !== null
                         && movieData.genre_ids.find(genre1 => mainMovieData.genre_ids.find(genre2 => genre1 === genre2)) // Tienen una categoria en comun
                         && !(await estaEnListaNegraPelis(movieData, userId))) {
@@ -536,7 +536,7 @@ async function checkMovies(moviesGlobalSetIds, mainFilmId, userId, number) {
 async function checkSeries(seriesGlobalSetIds, mainSerieId, userId, number) {
     const seriesFilteredSet = [];
     try {
-        const mainSerieData = (await peliculasTMDBResource.getTmdbRessourceFromImdb(mainSerieId)).tv_results[0];
+        const mainSerieData = (await peliculasTMDBResource.getTmdbRessourceFromTmdbSerie(mainSerieId));
         if(mainSerieData == null) {
             return [];
         }
@@ -545,7 +545,7 @@ async function checkSeries(seriesGlobalSetIds, mainSerieId, userId, number) {
             try {
                 // Verifica que ya no esta añadido
                 if(!seriesFilteredSet.find(serieSet => serie.imdbId == serieSet.imdbId)) {
-                    const serieData = (await peliculasTMDBResource.getTmdbRessourceFromImdb(serie.imdbId)).tv_results[0];
+                    const serieData = (await peliculasTMDBResource.getTmdbRessourceFromTmdbSerie(serie.imdbId));
                     if(serieData !== null
                         && serieData.genre_ids.find(genre1 => mainSerieData.genre_ids.find(genre2 => genre1 === genre2))  // Tienen una categoria en comun
                         && !(await estaEnListaNegraSeries(serieData, userId))) {
@@ -843,23 +843,6 @@ router.get("/porSimilitudes/serie/:serieId", async (req, res) => {
 // --------------------------
 // LISTA NEGRA
 // --------------------------
-
-async function getResourceFromTmdb(idTmdb){
-    //console.log("id tmdb: " + idTmdb);
-    try {
-        const movieData =  (await peliculasTMDBResource.getTmdbRessourceFromImdb(idTmdb)).movie_results[0];
-        if(movieData !== null) {
-            console.log("metodo recupera peli de tmdb con id: " + movieData );
-            return movieData;
-        }
-    } catch (err) {
-        if (err) {
-            console.log("Error: " + err);
-            return null;
-        }
-    }
-    return null;
-}
 
 async function getResourceFromTmdbPelicula(idTmdb){
     try {
